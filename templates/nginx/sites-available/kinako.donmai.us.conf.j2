@@ -1,14 +1,14 @@
 server {
-  server_name _;
-  listen 443 ssl http2 default_server;
-  listen [::]:443 ssl http2 default_server;
+  server_name cdn.donmai.us kinako.donmai.us;
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
   # listen fastopen=512 (https://www.keycdn.com/support/tcp-fast-open)
-
-  root /var/www/danbooru;
 
   ssl_certificate /etc/letsencrypt/live/kinako.donmai.us/fullchain.pem; # managed by Certbot
   ssl_certificate_key /etc/letsencrypt/live/kinako.donmai.us/privkey.pem; # managed by Certbot
   ssl_trusted_certificate /etc/letsencrypt/live/kinako.donmai.us/chain.pem; # managed by Certbot
+
+  root /var/www/danbooru;
 
   location = /nginx_status {
     stub_status on;
@@ -22,6 +22,7 @@ server {
     root /var/www/_letsencrypt;
   }
 
+  # strip tags from filenames
   location ~ (.*)/__.+?__(.+)$ {
     rewrite (.*)/__.+?__(.+)$ $1/$2;
   }
@@ -46,5 +47,26 @@ server {
     }
 
     try_files $uri =404;
+  }
+}
+
+# redirect raikou[1-4].donmai.us to cdn.donmai.us.
+server {
+  server_name ~raikou[1-4].donmai.us;
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+
+  ssl_certificate /etc/letsencrypt/live/kinako.donmai.us/fullchain.pem; # managed by Certbot
+  ssl_certificate_key /etc/letsencrypt/live/kinako.donmai.us/privkey.pem; # managed by Certbot
+  ssl_trusted_certificate /etc/letsencrypt/live/kinako.donmai.us/chain.pem; # managed by Certbot
+
+  # https://raikou1.donmai.us/d3/4e/d34e4cf0a437a5d65f8e82b7bcd02606.jpg
+  # => https://cdn.donmai.us/original/d3/4e/d34e4cf0a437a5d65f8e82b7bcd02606.jpg
+  location ~ "^/([0-9a-f]{2}/[0-9a-f]{2}/.*)" {
+    return 301 https://cdn.donmai.us/original/$1;
+  }
+
+  location / {
+    return 301 https://cdn.donmai.us$request_uri;
   }
 }
