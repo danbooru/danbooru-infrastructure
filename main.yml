@@ -23,6 +23,16 @@
       src: templates/archives/env
       dest: /var/www/archives/shared/.env
 
+- name: Update iqdbs config
+  hosts: iqdbs
+  tags:
+  - iqdbs
+  tasks:
+  - name: Update .env
+    template:
+      src: templates/iqdbs/env
+      dest: /var/www/iqdbs/shared/.env
+
 - name: Update /home/danbooru/.ssh
   hosts: rails
   tags:
