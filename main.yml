@@ -11,6 +11,18 @@
       src: templates/etc/hosts.j2
       dest: /etc/hosts
 
+- name: Update archives config
+  hosts: archives
+  become: yes
+  become_user: archiver
+  tags:
+  - archives
+  tasks:
+  - name: Update .env
+    template:
+      src: templates/archives/env
+      dest: /var/www/archives/shared/.env
+
 - name: Update /home/danbooru/.ssh
   hosts: rails
   tags:
