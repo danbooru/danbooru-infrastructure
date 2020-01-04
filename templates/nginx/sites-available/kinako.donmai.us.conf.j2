@@ -69,4 +69,8 @@ server {
   location / {
     return 301 https://cdn.donmai.us$request_uri;
   }
+
+  location = / {
+    return 301 https://danbooru.donmai.us;
+  }
 }
