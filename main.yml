@@ -33,6 +33,16 @@
       src: templates/iqdbs/env
       dest: /var/www/iqdbs/shared/.env
 
+- name: Update reportbooru config
+  hosts: reportbooru
+  tags:
+  - reportbooru
+  tasks:
+  - name: Update .env
+    template:
+      src: templates/reportbooru/env
+      dest: /var/www/reportbooru/shared/.env
+
 - name: Update /home/danbooru/.ssh
   hosts: rails
   tags:
