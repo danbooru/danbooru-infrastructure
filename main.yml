@@ -43,16 +43,6 @@
       src: templates/reportbooru/env
       dest: /var/www/reportbooru/shared/.env
 
-- name: Update /home/danbooru/.ssh
-  hosts: rails
-  tags:
-  - ssh
-  tasks:
-  - name: Update /home/danbooru/.ssh/config
-    template:
-      src: templates/ssh/config
-      dest: /home/danbooru/.ssh/config
-
 - name: Update production app server config
   hosts: rails
   tags:
