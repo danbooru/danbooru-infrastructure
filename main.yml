@@ -20,7 +20,7 @@
   tasks:
   - name: Update .env
     template:
-      src: templates/archives/env
+      src: templates/archives/env.j2
       dest: /var/www/archives/shared/.env
 
 - name: Update iqdbs config
@@ -30,7 +30,7 @@
   tasks:
   - name: Update .env
     template:
-      src: templates/iqdbs/env
+      src: templates/iqdbs/env.j2
       dest: /var/www/iqdbs/shared/.env
 
 - name: Update reportbooru config
@@ -40,7 +40,7 @@
   tasks:
   - name: Update .env
     template:
-      src: templates/reportbooru/env
+      src: templates/reportbooru/env.j2
       dest: /var/www/reportbooru/shared/.env
 
 - name: Update production app server config
