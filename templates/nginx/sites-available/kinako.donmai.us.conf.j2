@@ -31,6 +31,11 @@ server {
     include /etc/nginx/conf.d/headers.conf;
     add_header Cache-Control "public, max-age=31536000";
 
+    valid_referers none *.donmai.us donmai.us ~\.google\. ~\.bing\. ~\.yahoo\.;
+    if ($invalid_referer) {
+      return 403;
+    }
+
     # https://enable-cors.org/server_nginx.html
     if ($request_method = 'OPTIONS') {
       add_header 'Access-Control-Allow-Origin' '*';
