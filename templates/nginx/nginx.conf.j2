@@ -75,7 +75,7 @@ http {
   # openssl dhparam -out dhparam.pem 4096
   ssl_dhparam /etc/nginx/dhparam.pem;
 
-  ssl_early_data off;
+  # ssl_early_data off;
   ssl_session_timeout 1d;
   ssl_session_cache shared:SSL:32m;
   ssl_session_tickets off;
