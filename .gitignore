@@ -4,3 +4,6 @@ templates/danbooru/database.yml
 templates/danbooru/newrelic.yml
 templates/reportbooru/env.j2
 group_vars
+.terraform
+*.tfstate*
+*.tfvars

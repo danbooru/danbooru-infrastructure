@@ -1,0 +1,32 @@
+# Copy this file to terraform.tfvars and edit.
+# See variables.tf for documentation.
+
+aws_access_key = ""
+aws_secret_key = ""
+
+cloudflare_api_token = ""
+
+hetzner_username = ""
+hetzner_password = ""
+
+linode_token = ""
+
+ovh_application_key    = ""
+ovh_application_secret = ""
+ovh_consumer_key       = ""
+
+scaleway_dedibox_api_token = ""
+
+server_ids = {
+  inuyama = null
+  kagamihara = null
+  korone = null
+  shima = null
+  oogaki = null
+  saitou = null
+  kinako = null
+  oumae = null
+  yukinoshita = null
+  isshiki = null
+  naoko = null
+}
