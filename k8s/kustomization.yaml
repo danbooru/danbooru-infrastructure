@@ -1,0 +1,18 @@
+# https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/secretgenerator/
+# https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/configmapgenerator/#configmap-from-env-file
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+secretGenerator:
+- name: devbooru-local-config
+  namespace: danbooru
+  files:
+  - devbooru_local_config.rb
+  - id_rsa
+- name: devbooru-env
+  namespace: danbooru
+  env: devbooru.env
+resources:
+- devbooru.yaml
+- postgres-service.yaml
+- redis-service.yaml
