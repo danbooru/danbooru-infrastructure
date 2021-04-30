@@ -1,0 +1,17 @@
+# This is a TLS certificate for *.donmai.us.
+#
+# https://cert-manager.io/docs/tutorials/acme/dns-validation/
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: donmai-us
+  namespace: danbooru
+spec:
+  secretName: donmai-us-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  dnsNames:
+  - "*.donmai.us"
+  - "donmai.us"

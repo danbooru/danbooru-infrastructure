@@ -1,0 +1,25 @@
+# This is an account for accessing the Kubernetes dashboard.
+#
+# https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
+# https://kubernetes.io/docs/reference/access-authn-authz/authentication/
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: evazion
+  namespace: kubernetes-dashboard
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: evazion
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: evazion
+  namespace: kubernetes-dashboard
