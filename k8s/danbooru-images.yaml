@@ -1,0 +1,79 @@
+# Define ingress and nginx server for serving static images files on cdn.donmai.us.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: danbooru
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: danbooru-images
+  namespace: danbooru
+  labels:
+    app: danbooru-images
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: danbooru-images
+  template:
+    metadata:
+      labels:
+        app: danbooru-images
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.10
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: danbooru-images
+          readOnly: true
+          mountPropagation: HostToContainer
+      volumes:
+      - name: danbooru-images
+        hostPath:
+          path: /home/danbooru/images
+      nodeSelector:
+        kubernetes.io/hostname: korone
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: danbooru-images
+  namespace: danbooru
+spec:
+  selector:
+    app: danbooru-images
+  ports:
+    - port: 80
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: danbooru-images
+  namespace: danbooru
+spec:
+  rules:
+    - host: cdn.donmai.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danbooru-images
+                port:
+                  number: 80
+  tls:
+    - hosts:
+      - cdn.donmai.us
+      secretName: donmai-us-tls
