@@ -17,6 +17,23 @@ resource "cloudflare_filter" "allow_known_bots" {
   expression = "(cf.client.bot)"
 }
 
+resource "cloudflare_firewall_rule" "banned_ips" {
+  zone_id     = cloudflare_zone.donmai_us.id
+  filter_id   = cloudflare_filter.banned_ips.id
+  description = "Banned IPs"
+  action      = "js_challenge"
+  priority    = 500
+}
+
+resource "cloudflare_filter" "banned_ips" {
+  zone_id    = cloudflare_zone.donmai_us.id
+  expression = <<-EOS
+    ip.src in {
+      175.214.15.124
+    }
+  EOS
+}
+
 resource "cloudflare_firewall_rule" "suspect_logins" {
   zone_id     = cloudflare_zone.donmai_us.id
   filter_id   = cloudflare_filter.suspect_logins.id
