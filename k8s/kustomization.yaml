@@ -4,15 +4,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 secretGenerator:
-- name: devbooru-local-config
+- name: betabooru-local-config
   namespace: danbooru
   files:
-  - devbooru_local_config.rb
-  - id_rsa
-- name: devbooru-env
+  - secrets/betabooru_local_config.rb
+  - secrets/id_rsa
+- name: betabooru-env
   namespace: danbooru
-  env: devbooru.env
+  env: secrets/betabooru.env
 resources:
-- devbooru.yaml
+- betabooru.yaml
 - postgres-service.yaml
 - redis-service.yaml

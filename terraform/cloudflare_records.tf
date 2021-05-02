@@ -51,7 +51,15 @@ resource "cloudflare_record" "korone_donmai_us" {
   type    = "A"
   name    = "korone"
   value   = local.servers.korone.ipv4
-  proxied = false
+  proxied = true
+}
+
+resource "cloudflare_record" "betabooru_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "betabooru"
+  value   = local.servers.korone.ipv4
+  proxied = true
 }
 
 resource "cloudflare_record" "mail_donmai_us" {
@@ -130,6 +138,14 @@ resource "cloudflare_record" "ssh_kinako_donmai_us" {
   type    = "A"
   name    = "ssh.kinako"
   value   = local.servers.kinako.ipv4
+  proxied = false
+}
+
+resource "cloudflare_record" "ssh_korone_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "ssh.korone"
+  value   = local.servers.korone.ipv4
   proxied = false
 }
 

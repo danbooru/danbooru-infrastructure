@@ -1,19 +1,21 @@
+# Define a beta Danbooru instance running on betabooru.donmai.us.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: devbooru
+  name: betabooru
   namespace: danbooru
   labels:
-    app: devbooru
+    app: betabooru
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: devbooru
+      app: betabooru
   template:
     metadata:
       labels:
-        app: devbooru
+        app: betabooru
     spec:
       containers:
       - name: danbooru
@@ -23,15 +25,15 @@ spec:
         - containerPort: 3000
         envFrom:
         - secretRef:
-            name: devbooru-env
+            name: betabooru-env
         volumeMounts:
-        - name: devbooru-local-config
+        - name: betabooru-local-config
           mountPath: "/etc/danbooru"
           readOnly: true
       volumes:
-      - name: devbooru-local-config
+      - name: betabooru-local-config
         secret:
-          secretName: devbooru-local-config
+          secretName: betabooru-local-config
 
 
 ---
@@ -39,11 +41,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: devbooru
+  name: betabooru
   namespace: danbooru
 spec:
   selector:
-    app: devbooru
+    app: betabooru
   ports:
     - port: 80
       targetPort: 3000
@@ -53,21 +55,21 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: devbooru
+  name: betabooru
   namespace: danbooru
 spec:
   rules:
-    - host: devbooru.donmai.us
+    - host: betabooru.donmai.us
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: devbooru
+                name: betabooru
                 port:
                   number: 80
   tls:
     - hosts:
-      - devbooru.donmai.us
+      - betabooru.donmai.us
       secretName: donmai-us-tls
