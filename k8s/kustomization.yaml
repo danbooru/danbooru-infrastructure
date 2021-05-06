@@ -12,7 +12,11 @@ secretGenerator:
 - name: betabooru-env
   namespace: danbooru
   env: secrets/betabooru.env
+- name: cloudflare-api-token
+  namespace: cert-manager
+  env: secrets/cloudflare-api-token.env
 resources:
+- cluster-issuer.yaml
 - betabooru.yaml
 - postgres-service.yaml
 - redis-service.yaml
