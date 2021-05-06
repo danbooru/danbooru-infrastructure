@@ -20,3 +20,4 @@ resources:
 - betabooru.yaml
 - postgres-service.yaml
 - redis-service.yaml
+- ingress-nginx.yaml

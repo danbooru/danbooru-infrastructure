@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-configuration
+  namespace: ingress-nginx
+data:
+  # http://nginx.org/en/docs/ngx_core_module.html#worker_processes
+  worker-processes: "auto"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#worker-shutdown-timeout
+  # http://nginx.org/en/docs/ngx_core_module.html#worker_shutdown_timeout
+  worker-shutdown-timeout: "90s"
+
+  # https://stackoverflow.com/questions/37591784/nginx-worker-rlimit-nofile
+  # http://nginx.org/en/docs/ngx_core_module.html#worker_rlimit_nofile
+  max-worker-open-files: "65536"
+
+  # http://nginx.org/en/docs/ngx_core_module.html#worker_connections
+  max-worker-connections: "65536"
+
+  # http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size
+  proxy-body-size: "50m"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#enable-multi-accept
+  # http://nginx.org/en/docs/ngx_core_module.html#multi_accept
+  # https://serverfault.com/questions/763597/why-is-multi-accept-off-as-default-in-nginx/1030392#1030392
+  enable-multi-accept: "false"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#reuse-port
+  # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
+  # https://www.nginx.com/blog/socket-sharding-nginx-release-1-9-1/
+  # https://blog.cloudflare.com/the-sad-state-of-linux-socket-balancing/
+  # https://blog.cloudflare.com/perfect-locality-and-three-epic-systemtap-scripts/
+  reuse-port: "false"
+
+  # https://ssl-config.mozilla.org
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#ssl-session-cache-size
+  # http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_cache
+  ssl-session-cache-size: "16m" # about 64000 sessions (one megabyte can store about 4000 sessions)
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#ssl-session-timeout
+  # http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_timeout
+  # https://github.com/mozilla/server-side-tls/issues/198
+  ssl-session-timeout: "1d" # 1 day
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#enable-ocsp
+  # http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_stapling
+  # https://en.wikipedia.org/wiki/OCSP_stapling
+  enable-ocsp: "true"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#hsts-include-subdomains
+  # https://hstspreload.org
+  hsts-max-age: "31536000" # 1 year
+  hsts-include-subdomains: "false"
+  hsts-preload: "true"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#use-gzip
+  # http://nginx.org/en/docs/http/ngx_http_gzip_module.html
+  use-gzip: "true"
+  gzip-level: "5"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#enable-brotli
+  enable-brotli: "true"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#load-balance
+  # https://linkerd.io/2016/03/16/beyond-round-robin-load-balancing-for-latency/
+  load-balance: "round_robin"
+  #load-balance: "ewma"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#enable-real-ip
+  # http://nginx.org/en/docs/http/ngx_http_realip_module.html
+  enable-real-ip: "true"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#forwarded-for-header
+  # http://nginx.org/en/docs/http/ngx_http_realip_module.html#real_ip_header
+  # https://support.cloudflare.com/hc/en-us/articles/200170986-How-does-Cloudflare-handle-HTTP-Request-headers-
+  forwarded-for-header: "CF-Connecting-IP"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#proxy-real-ip-cidr
+  # curl https://www.cloudflare.com/ips-v4 | sort
+  # curl https://www.cloudflare.com/ips-v6 | sort
+  proxy-real-ip-cidr: "103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,199.27.128.0/21,2400:cb00::/32,2606:4700::/32,2803:f800::/32,2405:b500::/32,2405:8100::/32,2a06:98c0::/29,2c0f:f248::/32"
