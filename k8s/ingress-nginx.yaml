@@ -62,6 +62,9 @@ data:
   # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#enable-brotli
   enable-brotli: "true"
 
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#use-geoip
+  use-geoip: "false"
+
   # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#load-balance
   # https://linkerd.io/2016/03/16/beyond-round-robin-load-balancing-for-latency/
   load-balance: "round_robin"
@@ -80,3 +83,72 @@ data:
   # curl https://www.cloudflare.com/ips-v4 | sort
   # curl https://www.cloudflare.com/ips-v6 | sort
   proxy-real-ip-cidr: "103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17,199.27.128.0/21,2400:cb00::/32,2606:4700::/32,2803:f800::/32,2405:b500::/32,2405:8100::/32,2a06:98c0::/29,2c0f:f248::/32"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#limit-req-status-code
+  # http://nginx.org/en/docs/http/ngx_http_limit_req_module.html#limit_req_status
+  # http://nginx.org/en/docs/http/ngx_http_limit_conn_module.html#limit_conn_status
+  limit-req-status-code: "429"
+  limit-conn-status-code: "429"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#access-log-params
+  # http://nginx.org/en/docs/http/ngx_http_log_module.html#access_log
+  access-log-params: "buffer=64k flush=1s"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#enable-access-log-for-default-backend
+  enable-access-log-for-default-backend: "true"
+
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#log-format-upstream
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/log-format/
+  # http://nginx.org/en/docs/http/ngx_http_log_module.html#log_format
+  # http://nginx.org/en/docs/varindex.html
+  log-format-escape-json: "true"
+  log-format-upstream: '{"time":"$msec","id":"$request_id","ip":"$remote_addr","method":"$request_method","host":"$host","url":"$scheme://$host$request_uri","status":$status,"contentType":"$sent_http_content_type","userAgent":"$http_user_agent","referer":"$http_referer","upstream":"$upstream_addr","received":"$request_length","sent":"$bytes_sent","duration":"$request_time"}'
+
+  http-snippet: |
+    # Log start time so NewRelic can report queue times.
+    # https://docs.newrelic.com/docs/apm/applications-menu/features/request-queue-server-configuration-examples
+    more_set_input_headers 'X-Request-Start: $msec';
+
+    geo $realip_remote_addr $allowed_ip {
+      default          0;
+
+      # https://www.cloudflare.com/ips-v4
+      173.245.48.0/20  1;
+      103.21.244.0/22  1;
+      103.22.200.0/22  1;
+      103.31.4.0/22    1;
+      141.101.64.0/18  1;
+      108.162.192.0/18 1;
+      190.93.240.0/20  1;
+      188.114.96.0/20  1;
+      197.234.240.0/22 1;
+      198.41.128.0/17  1;
+      162.158.0.0/15   1;
+      172.64.0.0/13    1;
+      131.0.72.0/22    1;
+      104.16.0.0/13    1;
+      104.24.0.0/14    1;
+
+      # https://www.cloudflare.com/ips-v6
+      2400:cb00::/32   1;
+      2606:4700::/32   1;
+      2803:f800::/32   1;
+      2405:b500::/32   1;
+      2405:8100::/32   1;
+      2a06:98c0::/29   1;
+      2c0f:f248::/32   1;
+
+      # https://en.wikipedia.org/wiki/Private_network
+      127.0.0.0/8      1;
+      10.0.0.0/8       1;
+      172.16.0.0/12    1;
+      192.168.0.0/16   1;
+      ::1              1;
+      fc00::/7         1;
+      fe80::/10        1;
+    }
+
+  server-snippet: |
+    if ($allowed_ip != 1) {
+      return 403;
+    }
