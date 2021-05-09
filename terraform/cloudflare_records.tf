@@ -177,6 +177,14 @@ resource "cloudflare_record" "cdn_donmai_us" {
   proxied = true
 }
 
+resource "cloudflare_record" "cdn_beta_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "cdn-beta"
+  value   = local.servers.korone.ipv4
+  proxied = true
+}
+
 resource "cloudflare_record" "safebooru_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "CNAME"
