@@ -3,6 +3,11 @@
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+configMapGenerator:
+- name: danbooru-images-nginx-config
+  namespace: danbooru
+  files:
+  - config/nginx.conf
 secretGenerator:
 - name: betabooru-local-config
   namespace: danbooru
@@ -21,3 +26,4 @@ resources:
 - postgres-service.yaml
 - redis-service.yaml
 - ingress-nginx.yaml
+- danbooru-images.yaml

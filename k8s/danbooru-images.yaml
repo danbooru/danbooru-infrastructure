@@ -30,14 +30,21 @@ spec:
         ports:
         - containerPort: 80
         volumeMounts:
-        - mountPath: /usr/share/nginx/html
+        - mountPath: /srv
           name: danbooru-images
           readOnly: true
           mountPropagation: HostToContainer
+        - name: danbooru-images-nginx-config
+          mountPath: "/etc/nginx/nginx.conf"
+          subPath: "nginx.conf"
+          readOnly: true
       volumes:
       - name: danbooru-images
         hostPath:
           path: /home/danbooru/images
+      - name: danbooru-images-nginx-config
+        configMap:
+          name: danbooru-images-nginx-config
       nodeSelector:
         kubernetes.io/hostname: korone
 
