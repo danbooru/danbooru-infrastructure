@@ -141,6 +141,14 @@ resource "cloudflare_record" "ssh_kinako_donmai_us" {
   proxied = false
 }
 
+resource "cloudflare_record" "ssh_haachama_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "ssh.haachama"
+  value   = local.servers.haachama.ipv4
+  proxied = false
+}
+
 resource "cloudflare_record" "ssh_korone_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"

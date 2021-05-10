@@ -54,5 +54,10 @@ locals {
       id   = var.server_ids.kinako
       ipv4 = data.external.kinako_donmai_us.result.server_ip
     }
+
+    haachama = {
+      id   = var.server_ids.haachama
+      ipv4 = data.external.haachama_donmai_us.result.server_ip
+    }
   }
 }
