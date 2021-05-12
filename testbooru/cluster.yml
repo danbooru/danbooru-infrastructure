@@ -1,0 +1,60 @@
+# https://rancher.com/an-introduction-to-rke
+# https://rancher.com/docs/rke/latest/en/
+
+cluster_name: testbooru
+kubernetes_version: v1.20.5-rancher1-1
+ssh_agent_auth: true
+
+# https://rancher.com/docs/rke/latest/en/config-options/nodes/
+nodes:
+  - hostname_override: node1
+    internal_address: 172.16.0.2
+    address: 65.21.78.102
+    user: root
+    role: [controlplane, etcd, worker]
+  - hostname_override: node2
+    internal_address: 172.16.0.3
+    address: 65.21.78.103
+    user: root
+    role: [controlplane, etcd, worker]
+  - hostname_override: node3
+    internal_address: 172.16.0.4
+    address: 65.21.78.104
+    user: root
+    role: [controlplane, etcd, worker]
+
+services:
+  # https://rancher.com/docs/rke/latest/en/config-options/services/#kubernetes-api-server
+  kube-api:
+    service_cluster_ip_range: 10.43.0.0/16
+  # https://rancher.com/docs/rke/latest/en/config-options/services/#kubernetes-controller-manager
+  kube-controller:
+    cluster_cidr: 10.42.0.0/16
+    service_cluster_ip_range: 10.43.0.0/16
+  # https://support.rancher.com/hc/en-us/articles/360054671152-How-to-enable-IPVS-proxy-mode-for-kube-proxy#rancher-v2-x-0-3
+  # https://kubernetes.io/docs/concepts/services-networking/service/#proxy-mode-ipvs
+  kubeproxy:
+    extra_args:
+      proxy-mode: ipvs
+      ipvs-scheduler: rr
+      #masquerade-all: true
+
+# https://rancher.com/docs/rke/latest/en/config-options/add-ons/network-plugins/#canal-network-plug-in-options
+# https://github.com/flannel-io/flannel/blob/master/Documentation/backends.md#host-gw
+network:
+  plugin: flannel
+  options:
+    flannel_backend_type: host-gw
+    flannel_iface: eth1
+
+# https://rancher.com/docs/rke/latest/en/config-options/add-ons/dns/#configuring-coredns
+#dns:
+#  provider: coredns
+#  upstreamnameservers:
+#    - 1.1.1.1
+#    - 8.8.8.8
+
+# https://rancher.com/docs/rke/latest/en/config-options/add-ons/ingress-controllers/
+# Disable default nginx ingress controller
+#ingress:
+#  provider: none
