@@ -66,6 +66,9 @@ sed -i -e '/swap/d' /etc/fstab
 swapoff -a
 rm /swap.img
 
+ip route add default via 135.181.224.49
+ip route del default via 192.168.121.1
+
 #sudo ufw allow to any port 22 proto tcp
 #sudo ufw allow in on eno1 to any port 80,443,6443
 #sudo ufw reject in on eno1

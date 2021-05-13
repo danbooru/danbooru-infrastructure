@@ -9,17 +9,17 @@ ssh_agent_auth: true
 nodes:
   - hostname_override: node1
     internal_address: 172.16.0.2
-    address: 65.21.78.102
+    address: 135.181.224.50
     user: root
     role: [controlplane, etcd, worker]
   - hostname_override: node2
     internal_address: 172.16.0.3
-    address: 65.21.78.103
+    address: 135.181.224.51
     user: root
     role: [controlplane, etcd, worker]
   - hostname_override: node3
     internal_address: 172.16.0.4
-    address: 65.21.78.104
+    address: 135.181.224.52
     user: root
     role: [controlplane, etcd, worker]
 
@@ -45,7 +45,7 @@ network:
   plugin: flannel
   options:
     flannel_backend_type: host-gw
-    flannel_iface: eth1
+    flannel_iface: eth2 # should be the node's private network
 
 # https://rancher.com/docs/rke/latest/en/config-options/add-ons/dns/#configuring-coredns
 #dns:

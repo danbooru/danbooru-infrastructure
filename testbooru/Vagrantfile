@@ -3,9 +3,9 @@
 
 Vagrant.configure("2") do |config|
   nodes = [
-    { name: "node1", internal_ip: "172.16.0.2", external_ip: "65.21.78.102" },
-    { name: "node2", internal_ip: "172.16.0.3", external_ip: "65.21.78.103" },
-    { name: "node3", internal_ip: "172.16.0.4", external_ip: "65.21.78.104" },
+    { name: "node1", internal_ip: "172.16.0.2", external_ip: "135.181.224.50", netmask: 29 },
+    { name: "node2", internal_ip: "172.16.0.3", external_ip: "135.181.224.51", netmask: 29 },
+    { name: "node3", internal_ip: "172.16.0.4", external_ip: "135.181.224.52", netmask: 29 },
   ]
 
   nodes.each do |node|
@@ -17,7 +17,7 @@ Vagrant.configure("2") do |config|
 
       # https://www.vagrantup.com/docs/networking/private_network
       # https://www.vagrantup.com/docs/providers/virtualbox/networking
-      config.vm.network "public_network", ip: node[:external_ip]
+      config.vm.network "public_network", ip: node[:external_ip], type: "bridge", mode: "bridge", bridge: "br0", dev: "br0", netmask: node[:netmask]
       config.vm.network "private_network", ip: node[:internal_ip], libvirt__forward_mode: "none", virtualbox__intnet: true
 
       # https://www.vagrantup.com/docs/synced-folders/basic_usage
@@ -26,18 +26,18 @@ Vagrant.configure("2") do |config|
       # https://www.vagrantup.com/docs/providers/virtualbox
       #config.vm.provider "virtualbox" do |v|
       #  v.name = node[:name]
-      #  v.cpus = 4
-      #  v.memory = 2048
+      #  v.cpus = 12
+      #  v.memory = 16384
       #
-      #  # https://www.vagrantup.com/docs/providers/virtualbox/configuration#linked-clones
-      #  v.linked_clone = true
+      # # https://www.vagrantup.com/docs/providers/virtualbox/configuration#linked-clones
+      # v.linked_clone = true
       #
       #  # https://docs.oracle.com/en/virtualization/virtualbox/6.0/user/guestadd-memory-usage.html
       #  #v.customize ["modifyvm", :id, "--pagefusion", "on"]
       #end
 
       config.vm.provider "libvirt" do |v|
-        v.cpus = 6
+        v.cpus = 12
         v.memory = 16384
       end
 
