@@ -1,7 +1,7 @@
 # vim: sw=2
 
 - name: Update /etc
-  hosts: rails
+  hosts: ovh
   become: yes
   tags:
   - etc
@@ -60,10 +60,6 @@
     template:
       src: templates/danbooru/danbooru_local_config.rb
       dest: /var/www/danbooru/shared/config/danbooru_local_config.rb
-  - name: Update newrelic.yml
-    template:
-      src: templates/danbooru/newrelic.yml
-      dest: /var/www/danbooru/shared/config/newrelic.yml
 
 - name: Configure nginx
   hosts: nginx
