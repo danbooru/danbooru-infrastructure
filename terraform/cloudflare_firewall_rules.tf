@@ -32,6 +32,8 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 2001:470:98f2::2 - Async PRAW
 # 2600:3c01::f03c:92ff:fe0f:9014 - spamming "<character> rating:s" searches
 # 2620:0:2820:2000:1da5:95ed:a412:27f0 - spamming "squidward*" and "among_us*" searches
+# 54.89.240.87 - spamming "yuri -futa" searches
+# 155.138.224.79 - spamming "daughter order:random limit:1" searches at 10/s
 resource "cloudflare_filter" "banned_ips" {
   zone_id    = cloudflare_zone.donmai_us.id
   expression = <<-EOS
@@ -43,6 +45,8 @@ resource "cloudflare_filter" "banned_ips" {
       2001:470:98f2::2
       2600:3c01::f03c:92ff:fe0f:9014
       2620:0:2820:2000:1da5:95ed:a412:27f0
+      54.89.240.87
+      155.138.224.79
     }
   EOS
 }
