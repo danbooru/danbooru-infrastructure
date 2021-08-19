@@ -21,31 +21,42 @@ resource "cloudflare_firewall_rule" "banned_ips" {
   zone_id     = cloudflare_zone.donmai_us.id
   filter_id   = cloudflare_filter.banned_ips.id
   description = "Banned IPs"
-  action      = "js_challenge"
+  action      = "block"
   priority    = 500
 }
 
 # 2.200.68.92 - spamming "rating:explicit <tag>" searches for non-existent tags
+# 8.210.47.67 - spamming "score:150.. order:id_desc" searches
 # 34.226.218.10 - spamming "yuri -futa" searches for page 190
+# 83.248.2.129 - Setsunator
+# 188.148.116.39 - Setsunator
 # 91.238.105.48 - spamming "-rating:explicit hololive_englishs" searches
 # 175.214.15.124 - spamming "<tag> order:score" searches, scraping html
-# 2001:470:98f2::2 - Async PRAW
+## 2001:470:98f2::2 - Async PRAW (user:Midorina)
 # 2600:3c01::f03c:92ff:fe0f:9014 - spamming "<character> rating:s" searches
+# 2601:8a:400:8710:/64 - sending false dmca claims
 # 2620:0:2820:2000:1da5:95ed:a412:27f0 - spamming "squidward*" and "among_us*" searches
 # 54.89.240.87 - spamming "yuri -futa" searches
+# 54.226.45.112 - spamming "yuri -futa" searches
+# 54.227.221.207 - spamming "yuri -futa" searches
 # 155.138.224.79 - spamming "daughter order:random limit:1" searches at 10/s
 resource "cloudflare_filter" "banned_ips" {
   zone_id    = cloudflare_zone.donmai_us.id
   expression = <<-EOS
     ip.src in {
       2.200.68.92
+      8.210.47.67
       34.226.218.10
+      83.248.2.129
       91.238.105.48
       175.214.15.124
-      2001:470:98f2::2
+      188.148.116.39
       2600:3c01::f03c:92ff:fe0f:9014
+      2601:8a:400:8710::/64
       2620:0:2820:2000:1da5:95ed:a412:27f0
       54.89.240.87
+      54.226.45.112
+      54.227.221.207
       155.138.224.79
     }
   EOS
