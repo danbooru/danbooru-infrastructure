@@ -31,10 +31,12 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 83.248.2.129 - Setsunator
 # 188.148.116.39 - Setsunator
 # 91.238.105.48 - spamming "-rating:explicit hololive_englishs" searches
+# 107.72.178.93 - scraping /posts.json?page=aNNN too aggressively
 # 175.214.15.124 - spamming "<tag> order:score" searches, scraping html
 ## 2001:470:98f2::2 - Async PRAW (user:Midorina)
 # 2600:3c01::f03c:92ff:fe0f:9014 - spamming "<character> rating:s" searches
 # 2601:8a:400:8710:/64 - sending false dmca claims
+# 2605:6400:20:64d:d15e:b6e1:862c:a2cd - spamming "upskirt order:random", "1girl heterochromia order:random", "yumemi_riamu score:>50 order:random", and "kagemori_michiru rating:safe order:random" searches
 # 2620:0:2820:2000:1da5:95ed:a412:27f0 - spamming "squidward*" and "among_us*" searches
 # 54.89.240.87 - spamming "yuri -futa" searches
 # 54.226.45.112 - spamming "yuri -futa" searches
@@ -49,10 +51,12 @@ resource "cloudflare_filter" "banned_ips" {
       34.226.218.10
       83.248.2.129
       91.238.105.48
+      107.72.178.93
       175.214.15.124
       188.148.116.39
       2600:3c01::f03c:92ff:fe0f:9014
       2601:8a:400:8710::/64
+      2605:6400:20:64d:d15e:b6e1:862c:a2cd
       2620:0:2820:2000:1da5:95ed:a412:27f0
       54.89.240.87
       54.226.45.112
