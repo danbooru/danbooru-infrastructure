@@ -26,7 +26,8 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:1.19.10
+        # https://hub.docker.com/r/openresty/openresty
+        image: openresty/openresty:1.19.9.1-buster-fat
         ports:
         - containerPort: 80
         volumeMounts:
@@ -35,9 +36,14 @@ spec:
           readOnly: true
           mountPropagation: HostToContainer
         - name: danbooru-images-nginx-config
-          mountPath: "/etc/nginx/nginx.conf"
+          mountPath: "/usr/local/openresty/nginx/conf/nginx.conf"
           subPath: "nginx.conf"
           readOnly: true
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
       volumes:
       - name: danbooru-images
         hostPath:
