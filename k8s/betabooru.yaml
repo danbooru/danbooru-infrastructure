@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: danbooru
-        image: evazion/danbooru
+        image: ghcr.io/danbooru/danbooru:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
