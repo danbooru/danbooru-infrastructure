@@ -24,3 +24,15 @@ data "ovh_dedicated_server" "oogaki_donmai_us" {
 data "ovh_dedicated_server" "saitou_donmai_us" {
   service_name = var.server_ids.saitou
 }
+
+data "ovh_dedicated_server" "gura_donmai_us" {
+  service_name = var.server_ids.gura
+}
+
+data "ovh_dedicated_server" "ame_donmai_us" {
+  service_name = var.server_ids.ame
+}
+
+data "ovh_dedicated_server" "ina_donmai_us" {
+  service_name = var.server_ids.ina
+}

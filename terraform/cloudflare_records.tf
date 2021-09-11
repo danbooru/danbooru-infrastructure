@@ -109,6 +109,30 @@ resource "cloudflare_record" "shima_donmai_us" {
   proxied = true
 }
 
+resource "cloudflare_record" "gura_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "gura"
+  value   = local.servers.gura.ipv4
+  proxied = false
+}
+
+resource "cloudflare_record" "ame_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "ame"
+  value   = local.servers.ame.ipv4
+  proxied = false
+}
+
+resource "cloudflare_record" "ina_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "ina"
+  value   = local.servers.ina.ipv4
+  proxied = false
+}
+
 resource "cloudflare_record" "yukinoshita_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"

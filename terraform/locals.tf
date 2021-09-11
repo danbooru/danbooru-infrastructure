@@ -30,6 +30,21 @@ locals {
       ipv4 = data.ovh_dedicated_server.shima_donmai_us.ip
     }
 
+    gura = {
+      id   = var.server_ids.gura
+      ipv4 = data.ovh_dedicated_server.gura_donmai_us.ip
+    }
+
+    ame = {
+      id   = var.server_ids.ame
+      ipv4 = data.ovh_dedicated_server.ame_donmai_us.ip
+    }
+
+    ina = {
+      id   = var.server_ids.ina
+      ipv4 = data.ovh_dedicated_server.ina_donmai_us.ip
+    }
+
     isshiki = {
       id   = var.server_ids.isshiki
       ipv4 = tolist(linode_instance.isshiki_donmai_us.ipv4)[0]
