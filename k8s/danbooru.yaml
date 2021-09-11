@@ -87,7 +87,18 @@ spec:
                 name: danbooru
                 port:
                   number: 80
+    - host: danbooru-k8s.donmai.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danbooru
+                port:
+                  number: 80
   tls:
     - hosts:
       - danbooru.donmai.us
+      - danbooru-k8s.donmai.us
       secretName: donmai-us-tls
