@@ -1,0 +1,85 @@
+# Define a Danbooru instance running on danbooru.donmai.us.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: danbooru
+  namespace: danbooru
+  labels:
+    app: danbooru
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: danbooru
+  template:
+    metadata:
+      labels:
+        app: danbooru
+    spec:
+      containers:
+      - name: danbooru
+        image: ghcr.io/danbooru/danbooru:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - secretRef:
+            name: danbooru-env
+        volumeMounts:
+        - name: danbooru-local-config
+          mountPath: "/etc/danbooru"
+          readOnly: true
+      volumes:
+      - name: danbooru-local-config
+        secret:
+          secretName: danbooru-local-config
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - gura
+                - ame
+                - ina
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: danbooru
+  namespace: danbooru
+spec:
+  selector:
+    app: danbooru
+  ports:
+    - port: 80
+      targetPort: 3000
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: danbooru
+  namespace: danbooru
+spec:
+  rules:
+    - host: danbooru.donmai.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danbooru
+                port:
+                  number: 80
+  tls:
+    - hosts:
+      - danbooru.donmai.us
+      secretName: donmai-us-tls

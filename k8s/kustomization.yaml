@@ -20,9 +20,18 @@ secretGenerator:
 - name: cloudflare-api-token
   namespace: cert-manager
   env: secrets/cloudflare-api-token.env
+- name: danbooru-local-config
+  namespace: danbooru
+  files:
+  - secrets/danbooru_local_config.rb
+  - secrets/id_rsa
+- name: danbooru-env
+  namespace: danbooru
+  env: secrets/danbooru.env
 resources:
 - cluster-issuer.yaml
 - betabooru.yaml
+- danbooru.yaml
 - postgres-service.yaml
 - redis-service.yaml
 - ingress-nginx.yaml
