@@ -34,17 +34,25 @@ spec:
       - name: danbooru-local-config
         secret:
           secretName: danbooru-local-config
+
+      # Try to run one instance per node. Avoid multiple instances on the same node
+      # https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: danbooru
+
+      # Only run on the app servers.
+      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: In
-                values:
-                - gura
-                - ame
-                - ina
+              - { key: kubernetes.io/hostname, operator: In, values: [gura, ame, ina] }
 
 ---
 
