@@ -25,6 +25,8 @@ resource "cloudflare_firewall_rule" "banned_ips" {
   priority    = 500
 }
 
+# 1.117.171.171 - spamming full_body / solo searches
+# 116.177.27.12 - same guy as above
 # 2.200.68.92 - spamming "rating:explicit <tag>" searches for non-existent tags
 # 8.210.47.67 - spamming "score:150.. order:id_desc" searches
 # 34.226.218.10 - spamming "yuri -futa" searches for page 190
@@ -46,12 +48,14 @@ resource "cloudflare_filter" "banned_ips" {
   zone_id    = cloudflare_zone.donmai_us.id
   expression = <<-EOS
     ip.src in {
+      1.117.171.171
       2.200.68.92
       8.210.47.67
       34.226.218.10
       83.248.2.129
       91.238.105.48
       107.72.178.93
+      116.177.27.12 
       175.214.15.124
       188.148.116.39
       2600:3c01::f03c:92ff:fe0f:9014
