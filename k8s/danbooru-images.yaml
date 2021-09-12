@@ -86,18 +86,7 @@ spec:
                 name: danbooru-images
                 port:
                   number: 80
-    - host: cdn-beta.donmai.us
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: danbooru-images
-                port:
-                  number: 80
   tls:
     - hosts:
       - cdn.donmai.us
-      - cdn-beta.donmai.us
       secretName: donmai-us-tls
