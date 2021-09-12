@@ -26,6 +26,18 @@ spec:
         envFrom:
         - secretRef:
             name: danbooru-env
+        env:
+        # Set the instance name to the node name in the New Relic UI to avoid
+        # problems with New Relic thinking we have hundreds of unique instances
+        # because our hostname changes after every deploy.
+        #
+        # https://docs.newrelic.com/docs/agents/ruby-agent/configuration/ruby-agent-configuration/#process_host-display_name
+        # https://discuss.newrelic.com/t/relic-solution-hostname-explosions/58911
+        # https://newrelic.zendesk.com/hc/en-us/articles/360058414314-Ruby-Hostname-Explosion
+        - name: NEW_RELIC_PROCESS_HOST_DISPLAY_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         volumeMounts:
         - name: danbooru-local-config
           mountPath: "/etc/danbooru"
