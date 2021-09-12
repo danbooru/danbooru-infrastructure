@@ -1,7 +1,7 @@
 Ansible scripts for maintaining Danbooru. Includes:
 
 * Configuration templates for Nginx and other OS-level services.
-* Configuration templates for Danbooru services (Danbooru, IQDBs, Reportbooru, Archives, etc).
+* Configuration templates for Danbooru services (Danbooru, Reportbooru, Archives, etc).
 * Ansible scripts for updating the running production servers.
 
 This repository is to document how Danbooru is configured in production. This

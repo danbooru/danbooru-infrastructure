@@ -23,16 +23,6 @@
       src: templates/archives/env.j2
       dest: /var/www/archives/shared/.env
 
-- name: Update iqdbs config
-  hosts: iqdbs
-  tags:
-  - iqdbs
-  tasks:
-  - name: Update .env
-    template:
-      src: templates/iqdbs/env.j2
-      dest: /var/www/iqdbs/shared/.env
-
 - name: Update reportbooru config
   hosts: reportbooru
   tags:
