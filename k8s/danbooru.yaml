@@ -30,6 +30,19 @@ spec:
         - name: danbooru-local-config
           mountPath: "/etc/danbooru"
           readOnly: true
+
+        # Delay shutdown for 15 seconds when the pod is stopped to give it time
+        # to finish servicing any incoming requests.
+        #
+        # https://github.com/puma/puma/issues/2343#issuecomment-704386789
+        # https://blog.gruntwork.io/delaying-shutdown-to-wait-for-pod-deletion-propagation-445f779a8304
+        # https://philpearl.github.io/post/k8s_ingress/
+        # https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
+        # https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sleep", "15"]
       volumes:
       - name: danbooru-local-config
         secret:
