@@ -52,13 +52,39 @@ spec:
         # https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
         # https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace
         lifecycle:
-          preStop:
-            exec:
-              command: ["sleep", "15"]
+          preStop: { exec: { command: ["sleep", "15"] }}
+
+      # See config/danbooru/nginx.conf for the nginx config.
+      - name: openresty
+        image: ghcr.io/danbooru/danbooru:latest
+        imagePullPolicy: Always
+        command: ["openresty"]
+        args: ["-e", "/dev/stderr"]
+        ports:
+        - containerPort: 8080
+
+        # Mount config/danbooru/nginx.conf at /usr/local/nginx/conf/nginx.conf
+        volumeMounts:
+        - name: danbooru-nginx-config
+          mountPath: "/usr/local/nginx/conf"
+          readOnly: true
+
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
+        lifecycle:
+          preStop: { exec: { command: ["sleep", "15"] }}
+
       volumes:
       - name: danbooru-local-config
         secret:
           secretName: danbooru-local-config
+      - name: danbooru-nginx-config
+        configMap:
+          name: danbooru-nginx-config
 
       # Try to run one instance per node. Avoid multiple instances on the same node
       # https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
@@ -91,7 +117,7 @@ spec:
     app: danbooru
   ports:
     - port: 80
-      targetPort: 3000
+      targetPort: 8080
 
 ---
 

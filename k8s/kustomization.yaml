@@ -8,6 +8,10 @@ configMapGenerator:
   namespace: danbooru
   files:
   - config/nginx.conf
+- name: danbooru-nginx-config
+  namespace: danbooru
+  files:
+  - config/danbooru/nginx.conf
 secretGenerator:
 - name: betabooru-local-config
   namespace: danbooru
