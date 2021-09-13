@@ -109,6 +109,10 @@ data:
     # https://docs.newrelic.com/docs/apm/applications-menu/features/request-queue-server-configuration-examples
     more_set_input_headers 'X-Request-Start: $msec';
 
+    # Return the Cloudflare IP, the pod name of the ingress that handled the
+    # request, and the node name and pod name of the upstream that served it.
+    more_set_headers 'Via: $realip_remote_addr, $hostname, $upstream_http_via';
+
     geo $realip_remote_addr $allowed_ip {
       default          0;
 
