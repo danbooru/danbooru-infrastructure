@@ -164,6 +164,9 @@ kind: Ingress
 metadata:
   name: danbooru
   namespace: danbooru
+  annotations:
+    nginx.ingress.kubernetes.io/limit-rps: 10
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: 5
 spec:
   rules:
     - host: danbooru.donmai.us
