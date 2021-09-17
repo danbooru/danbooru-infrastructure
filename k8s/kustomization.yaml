@@ -3,24 +3,42 @@
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
 configMapGenerator:
+# The cdn.donmai.us nginx config
 - name: danbooru-images-nginx-config
   namespace: danbooru
   files:
   - config/nginx.conf
+
+# The danbooru.donmai.us nginx config
 - name: danbooru-nginx-config
   namespace: danbooru
   files:
   - config/danbooru/nginx.conf
+
+# The betabooru.donmai.us .env config
+- name: betabooru-config-env
+  namespace: danbooru
+  env: config/betabooru.env
+
+# The danbooru.donmai.us .env config
+- name: danbooru-config-env
+  namespace: danbooru
+  env: config/danbooru.env
+
 secretGenerator:
-- name: betabooru-local-config
+# The danbooru_local_config.rb for danbooru.donmai.us and betabooru.donmai.us
+- name: danbooru-local-config
   namespace: danbooru
   files:
-  - secrets/betabooru_local_config.rb
+  - secrets/danbooru_local_config.rb
   - secrets/id_rsa
-- name: betabooru-env
+
+# The danbooru.donmai.us and betabooru.donmai.us secret .env config
+- name: danbooru-secret-env
   namespace: danbooru
-  env: secrets/betabooru.env
+  env: secrets/danbooru.env
 
 # This Cloudflare API token is used by cert-manager to solve DNS01 challenges.
 # This secret has to be in the cert-manager namespace for cert-manager to find
@@ -31,16 +49,10 @@ secretGenerator:
   env: secrets/cloudflare-api-token.env
   options:
     disableNameSuffixHash: true
-- name: danbooru-local-config
-  namespace: danbooru
-  files:
-  - secrets/danbooru_local_config.rb
-  - secrets/id_rsa
-- name: danbooru-env
-  namespace: danbooru
-  env: secrets/danbooru.env
+
 - name: pgadmin-env
   env: secrets/pgadmin.env
+
 resources:
 - cluster-issuer.yaml
 - betabooru.yaml

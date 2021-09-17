@@ -24,11 +24,15 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
+
         envFrom:
+        - configMapRef:
+            name: betabooru-config-env
         - secretRef:
-            name: betabooru-env
+            name: danbooru-secret-env
+
         volumeMounts:
-        - name: betabooru-local-config
+        - name: danbooru-local-config
           mountPath: "/etc/danbooru"
           readOnly: true
 
@@ -83,9 +87,9 @@ spec:
           initialDelaySeconds: 5
 
       volumes:
-      - name: betabooru-local-config
+      - name: danbooru-local-config
         secret:
-          secretName: betabooru-local-config
+          secretName: danbooru-local-config
       - name: danbooru-nginx-config
         configMap:
           name: danbooru-nginx-config

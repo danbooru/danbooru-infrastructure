@@ -33,9 +33,12 @@ spec:
 
         ports:
         - containerPort: 3000
+
         envFrom:
+        - configMapRef:
+            name: danbooru-config-env
         - secretRef:
-            name: danbooru-env
+            name: danbooru-secret-env
 
         volumeMounts:
         - name: danbooru-local-config
