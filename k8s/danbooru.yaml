@@ -8,10 +8,16 @@ metadata:
   labels:
     app: danbooru
 spec:
-  replicas: 3
+  replicas: 6
   selector:
     matchLabels:
       app: danbooru
+
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 100%
+
   template:
     metadata:
       labels:
@@ -123,7 +129,7 @@ spec:
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname
-        whenUnsatisfiable: ScheduleAnyway
+        whenUnsatisfiable: DoNotSchedule
         labelSelector:
           matchLabels:
             app: danbooru
