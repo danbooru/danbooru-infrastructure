@@ -65,3 +65,4 @@ resources:
 - danbooru-images.yaml
 - certificate.yaml
 - pgadmin.yaml
+- kubernetes-dashboard.yaml
