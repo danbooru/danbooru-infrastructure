@@ -2,7 +2,7 @@
 # https://support.cloudflare.com/hc/en-us/articles/360019093151-Managing-DNS-records-in-Cloudflare
 
 resource "cloudflare_record" "danbooru_donmai_us" {
-  count   = 3
+  count   = 6
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
   name    = "danbooru"
@@ -10,6 +10,9 @@ resource "cloudflare_record" "danbooru_donmai_us" {
     local.servers.saitou.ipv4,
     local.servers.kagamihara.ipv4,
     local.servers.shima.ipv4,
+    local.servers.gura.ipv4,
+    local.servers.ame.ipv4,
+    local.servers.ina.ipv4,
   ][count.index]
   proxied = true
 }
