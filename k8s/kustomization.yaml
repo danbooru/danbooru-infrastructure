@@ -39,6 +39,8 @@ secretGenerator:
 - name: danbooru-env
   namespace: danbooru
   env: secrets/danbooru.env
+- name: pgadmin-env
+  env: secrets/pgadmin.env
 resources:
 - cluster-issuer.yaml
 - betabooru.yaml
@@ -48,3 +50,4 @@ resources:
 - ingress-nginx.yaml
 - danbooru-images.yaml
 - certificate.yaml
+- pgadmin.yaml
