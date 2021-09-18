@@ -179,6 +179,7 @@ spec:
                 name: danbooru
                 port:
                   number: 80
+
     - host: safebooru.donmai.us
       http:
         paths:
@@ -189,6 +190,40 @@ spec:
                 name: danbooru
                 port:
                   number: 80
+
+    - host: shima.donmai.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danbooru
+                port:
+                  number: 80
+
+    - host: saitou.donmai.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danbooru
+                port:
+                  number: 80
+
+    - host: kagamihara.donmai.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danbooru
+                port:
+                  number: 80
+
     - host: danbooru-k8s.donmai.us
       http:
         paths:
