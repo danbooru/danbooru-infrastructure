@@ -67,3 +67,4 @@ resources:
 - pgadmin.yaml
 - kubernetes-dashboard.yaml
 - danbooru-cron.yaml
+- danbooru-jobs.yaml

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: danbooru-jobs
+  namespace: danbooru
+  labels:
+    app: danbooru-jobs
+
+spec:
+  replicas: 8
+
+  selector:
+    matchLabels:
+      app: danbooru-jobs
+
+  template:
+    metadata:
+      labels:
+        app: danbooru-jobs
+
+    spec:
+      # hostname: danbooru-jobs
+
+      containers:
+      - name: danbooru
+        image: ghcr.io/danbooru/danbooru:production
+        imagePullPolicy: Always
+
+        command: ["bin/rails"]
+        args: ["jobs:work"]
+
+        envFrom:
+        - configMapRef:
+            name: danbooru-config-env
+        - secretRef:
+            name: danbooru-secret-env
+
+        volumeMounts:
+        - name: danbooru-local-config
+          mountPath: "/etc/danbooru"
+          readOnly: true
+
+      volumes:
+      - name: danbooru-local-config
+        secret:
+          secretName: danbooru-local-config
+
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: danbooru-jobs
+
+      # Only run on the app servers.
+      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - { key: kubernetes.io/hostname, operator: In, values: [gura, ame, ina] }
