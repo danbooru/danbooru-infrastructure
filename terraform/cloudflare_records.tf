@@ -43,14 +43,6 @@ resource "cloudflare_record" "isshiki_donmai_us" {
   proxied = true
 }
 
-resource "cloudflare_record" "kagamihara_donmai_us" {
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "A"
-  name    = "kagamihara"
-  value   = local.servers.kagamihara.ipv4
-  proxied = true
-}
-
 resource "cloudflare_record" "kinako_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
@@ -104,22 +96,6 @@ resource "cloudflare_record" "oumae_donmai_us" {
   name    = "oumae"
   value   = local.servers.oumae.ipv4
   proxied = false
-}
-
-resource "cloudflare_record" "saitou_donmai_us" {
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "A"
-  name    = "saitou"
-  value   = local.servers.saitou.ipv4
-  proxied = true
-}
-
-resource "cloudflare_record" "shima_donmai_us" {
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "A"
-  name    = "shima"
-  value   = local.servers.shima.ipv4
-  proxied = true
 }
 
 resource "cloudflare_record" "gura_donmai_us" {
@@ -290,6 +266,30 @@ resource "cloudflare_record" "hijiribe_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "CNAME"
   name    = "hijiribe"
+  value   = "danbooru.donmai.us"
+  proxied = true
+}
+
+resource "cloudflare_record" "saitou_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "CNAME"
+  name    = "saitou"
+  value   = "danbooru.donmai.us"
+  proxied = true
+}
+
+resource "cloudflare_record" "shima_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "CNAME"
+  name    = "shima"
+  value   = "danbooru.donmai.us"
+  proxied = true
+}
+
+resource "cloudflare_record" "kagamihara_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "CNAME"
+  name    = "kagamihara"
   value   = "danbooru.donmai.us"
   proxied = true
 }
