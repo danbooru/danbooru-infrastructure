@@ -14,19 +14,6 @@ resource "cloudflare_record" "danbooru_donmai_us" {
   proxied = true
 }
 
-resource "cloudflare_record" "danbooru_k8s_donmai_us" {
-  count   = 3
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "A"
-  name    = "danbooru-k8s"
-  value = [
-    local.servers.gura.ipv4,
-    local.servers.ame.ipv4,
-    local.servers.ina.ipv4,
-  ][count.index]
-  proxied = true
-}
-
 resource "cloudflare_record" "inuyama_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
