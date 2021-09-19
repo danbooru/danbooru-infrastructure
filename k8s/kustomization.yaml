@@ -66,3 +66,4 @@ resources:
 - certificate.yaml
 - pgadmin.yaml
 - kubernetes-dashboard.yaml
+- danbooru-cron.yaml
