@@ -34,7 +34,7 @@ spec:
 
       containers:
       - name: danbooru
-        image: ghcr.io/danbooru/danbooru:latest
+        image: ghcr.io/danbooru/danbooru:production
         imagePullPolicy: Always
 
         ports:
