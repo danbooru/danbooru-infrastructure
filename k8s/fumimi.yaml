@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: fumimi
+  namespace: danbooru
+  labels:
+    app: fumimi
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: fumimi
+
+  template:
+    metadata:
+      labels:
+        app: fumimi
+
+    spec:
+      # hostname: fumimi
+
+      containers:
+      - name: fumimi
+        image: evazion/fumimi-discord
+        imagePullPolicy: Always
+
+        envFrom:
+        - secretRef:
+            name: fumimi-secret-env
+
+      # Only run on the app servers.
+      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - { key: kubernetes.io/hostname, operator: In, values: [gura, ame, ina] }
