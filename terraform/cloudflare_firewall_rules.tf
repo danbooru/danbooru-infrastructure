@@ -29,6 +29,7 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 116.177.27.12 - same guy as above
 # 2.200.68.92 - spamming "rating:explicit <tag>" searches for non-existent tags
 # 8.210.47.67 - spamming "score:150.. order:id_desc" searches
+# 34.90.245.177 - flooding malformed http requests (400 bad request)
 # 34.226.218.10 - spamming "yuri -futa" searches for page 190
 # 83.248.2.129 - Setsunator
 # 188.148.116.39 - Setsunator
@@ -51,6 +52,7 @@ resource "cloudflare_filter" "banned_ips" {
       1.117.171.171
       2.200.68.92
       8.210.47.67
+      34.90.245.177
       34.226.218.10
       83.248.2.129
       91.238.105.48
