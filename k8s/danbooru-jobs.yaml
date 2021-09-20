@@ -30,6 +30,11 @@ spec:
         command: ["bin/rails"]
         args: ["jobs:work"]
 
+        env:
+        # https://docs.newrelic.com/docs/agents/ruby-agent/background-jobs/delayedjob-instrumentation/
+        - name: NEW_RELIC_DISPATCHER
+          value: delayed_job
+
         envFrom:
         - configMapRef:
             name: danbooru-config-env
