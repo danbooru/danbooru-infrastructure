@@ -32,6 +32,12 @@ nodes:
     user: k8s
     port: 60022
     role: [controlplane, etcd, worker]
+  - address: mori.donmai.us
+    hostname_override: mori
+    internal_address: 172.16.0.10
+    user: k8s
+    port: 60022
+    role: [worker]
 
 services:
   # https://rancher.com/docs/rke/latest/en/config-options/services/#kubernetes-api-server
