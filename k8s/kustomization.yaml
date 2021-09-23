@@ -65,7 +65,7 @@ resources:
 - postgres-service.yaml
 - redis-service.yaml
 - recommender-service.yaml
-- iqdb-service.yaml
+- iqdb.yaml
 - ingress-nginx.yaml
 - danbooru-images.yaml
 - certificate.yaml

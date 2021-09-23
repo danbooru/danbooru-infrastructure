@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: iqdb
+  namespace: danbooru
+  labels:
+    app: iqdb
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: iqdb
+
+  strategy:
+    type: Recreate
+
+  template:
+    metadata:
+      labels:
+        app: iqdb
+
+    spec:
+      nodeName: korone
+
+      containers:
+      - name: iqdb
+        image: evazion/iqdb
+        imagePullPolicy: Always
+        args: ["http", "0.0.0.0", "5588", "/mnt/iqdb.sqlite"]
+
+        ports:
+        - containerPort: 5588
+
+        volumeMounts:
+        - mountPath: /mnt
+          name: iqdb
+          mountPropagation: HostToContainer
+
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 5588
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 6
+          initialDelaySeconds: 5
+
+      volumes:
+      - name: iqdb
+        hostPath:
+          path: /home/danbooru/iqdb
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: iqdb
+  namespace: danbooru
+spec:
+  selector:
+    app: iqdb
+  ports:
+  - port: 5588
+    targetPort: 5588
