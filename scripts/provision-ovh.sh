@@ -155,7 +155,7 @@ apt-get install -y --no-install-recommends \
   zfs-initramfs zfs-zed bash-completion openssh-server ssh-import-id git \
   publicsuffix ufw man-db apt-transport-https curl ca-certificates gnupg \
   lsb-release neovim usbutils net-tools psmisc lsof vlan pciutils hdparm \
-  ipvsadm nvme-cli smartmontools socat
+  ipvsadm nvme-cli smartmontools socat linux-tools-generic
 apt-get purge -y cron rsyslog networkd-dispatcher
 
 # Install Docker
@@ -265,6 +265,30 @@ cat << EOF > /etc/docker/daemon.json
       "max-buffer-size": "8m"
     }
   }
+EOF
+
+cat << EOF > /etc/systemd/system/x86-energy-perf-policy.service
+[Unit]
+Description=Set x86 energy policy to performance
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/x86_energy_perf_policy performance
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat << EOF > /etc/systemd/system/cpupower-performance.service
+[Unit]
+Description=Set CPU governor to performance
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/cpupower frequency-set -g performance
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
 # Silence log warnings from sudo about /etc/securetty not existing
