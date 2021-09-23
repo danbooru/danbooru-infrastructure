@@ -74,3 +74,4 @@ resources:
 - danbooru-cron.yaml
 - danbooru-jobs.yaml
 - fumimi.yaml
+- service-accounts.yaml
