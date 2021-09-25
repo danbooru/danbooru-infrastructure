@@ -33,7 +33,7 @@ spec:
       containers:
       - name: nginx
         # https://hub.docker.com/r/openresty/openresty
-        image: openresty/openresty:1.19.9.1-buster-fat
+        image: openresty/openresty:1.19.9.1-alpine
         ports:
         - containerPort: 80
         volumeMounts:
