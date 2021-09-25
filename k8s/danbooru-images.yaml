@@ -19,6 +19,12 @@ spec:
   selector:
     matchLabels:
       app: danbooru-images
+
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 100%
+
   template:
     metadata:
       labels:
@@ -39,11 +45,33 @@ spec:
           mountPath: "/usr/local/openresty/nginx/conf/nginx.conf"
           subPath: "nginx.conf"
           readOnly: true
+
         env:
         - name: K8S_NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+
+        readinessProbe:
+          httpGet:
+            path: /images/download-preview.png
+            port: 80
+            httpHeaders:
+            - name: Host
+              value: cdn.donmai.us
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 6
+          initialDelaySeconds: 2
+
+        lifecycle:
+          preStop: { exec: { command: ["sleep", "5"] }}
+
       volumes:
       - name: danbooru-images
         hostPath:
