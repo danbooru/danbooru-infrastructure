@@ -167,53 +167,11 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/limit-rps: 10
     nginx.ingress.kubernetes.io/limit-burst-multiplier: 5
+    nginx.ingress.kubernetes.io/server-alias: "safebooru.donmai.us,shima.donmai.us,saitou.donmai.us,kagamihara.donmai.us,sonohara.donmai.us,hijiribe.donmai.us"
+
 spec:
   rules:
     - host: danbooru.donmai.us
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: danbooru
-                port:
-                  number: 80
-
-    - host: safebooru.donmai.us
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: danbooru
-                port:
-                  number: 80
-
-    - host: shima.donmai.us
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: danbooru
-                port:
-                  number: 80
-
-    - host: saitou.donmai.us
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: danbooru
-                port:
-                  number: 80
-
-    - host: kagamihara.donmai.us
       http:
         paths:
           - path: /
