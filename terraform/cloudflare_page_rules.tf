@@ -30,7 +30,7 @@ resource "cloudflare_page_rule" "page_rule_d233aa0f9beecdda3076f60414cb6ff1" {
   priority = 3
   status   = "active"
   actions {
-    cache_level = "cache_everything"
+    cache_level = "aggressive"
   }
 }
 
