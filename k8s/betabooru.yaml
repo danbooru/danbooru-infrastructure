@@ -56,8 +56,7 @@ spec:
       - name: openresty
         image: ghcr.io/danbooru/danbooru:betabooru
         imagePullPolicy: Always
-        command: ["openresty"]
-        args: ["-e", "/dev/stderr"]
+        args: ["openresty", "-e", "/dev/stderr"]
         ports:
         - containerPort: 8080
 

@@ -27,8 +27,7 @@ spec:
         image: ghcr.io/danbooru/danbooru:production
         imagePullPolicy: Always
 
-        command: ["bin/rails"]
-        args: ["danbooru:cron"]
+        args: ["bin/rails", "danbooru:cron"]
 
         envFrom:
         - configMapRef:

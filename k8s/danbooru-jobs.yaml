@@ -27,8 +27,7 @@ spec:
         image: ghcr.io/danbooru/danbooru:production
         imagePullPolicy: Always
 
-        command: ["bin/rails"]
-        args: ["jobs:work"]
+        args: ["bin/rails", "jobs:work"]
 
         env:
         # https://docs.newrelic.com/docs/agents/ruby-agent/background-jobs/delayedjob-instrumentation/
