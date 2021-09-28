@@ -1,0 +1,44 @@
+# This deployment handles showing the Downbooru page when maintenance mode is
+# enabled. The way it works is that the Danbooru service (defined in danbooru.yaml)
+# is switched to route traffic to this deployment instead of the Danbooru
+# deployment when maintenance mode is enabled.
+#
+# This deployment contains a Danbooru instance that uses Nginx to serve the
+# public/maintenance.html page in response to every request.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: downbooru
+  namespace: danbooru
+  labels:
+    app: downbooru
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: downbooru
+
+  template:
+    metadata:
+      labels:
+        app: downbooru
+    spec:
+      containers:
+      - name: openresty
+        image: ghcr.io/danbooru/danbooru:production
+        imagePullPolicy: Always
+        args: ["openresty", "-e", "/dev/stderr"]
+        ports:
+        - containerPort: 8080
+
+        volumeMounts:
+        - name: downbooru-nginx-config
+          mountPath: "/usr/local/nginx/conf"
+          readOnly: true
+
+      volumes:
+      - name: downbooru-nginx-config
+        configMap:
+          name: downbooru-nginx-config

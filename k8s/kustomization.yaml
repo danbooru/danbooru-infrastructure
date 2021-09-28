@@ -17,6 +17,12 @@ configMapGenerator:
   files:
   - config/danbooru/nginx.conf
 
+# The Downbooru nginx config for maintenance mode
+- name: downbooru-nginx-config
+  namespace: danbooru
+  files:
+  - config/downbooru/nginx.conf
+
 # The betabooru.donmai.us .env config
 - name: betabooru-config-env
   namespace: danbooru
@@ -75,3 +81,4 @@ resources:
 - danbooru-jobs.yaml
 - fumimi.yaml
 - service-accounts.yaml
+- downbooru.yaml
