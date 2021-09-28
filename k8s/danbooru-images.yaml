@@ -1,12 +1,5 @@
 # Define ingress and nginx server for serving static images files on cdn.donmai.us.
 
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: danbooru
-
----
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:

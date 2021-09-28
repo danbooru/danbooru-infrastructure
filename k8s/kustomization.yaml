@@ -62,6 +62,7 @@ secretGenerator:
     disableNameSuffixHash: true
 
 - name: pgadmin-env
+  namespace: mgmt
   env: secrets/pgadmin.env
 
 resources:
@@ -82,3 +83,4 @@ resources:
 - fumimi.yaml
 - service-accounts.yaml
 - downbooru.yaml
+- namespaces.yaml
