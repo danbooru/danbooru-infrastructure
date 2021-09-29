@@ -1,0 +1,73 @@
+# https://devopscube.com/node-exporter-kubernetes/
+# https://github.com/bibinwilson/kubernetes-node-exporter/blob/main/daemonset.yaml
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: mgmt
+  labels:
+    app: node-exporter
+
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+
+    spec:
+      containers:
+      - name: node-exporter
+        image: prom/node-exporter:v1.2.2
+        args:
+        - --path.sysfs=/host/sys
+        - --path.rootfs=/host/root
+        - --no-collector.wifi
+        - --no-collector.hwmon
+        - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/pods/.+)($|/)
+        - --collector.netclass.ignored-devices=^(veth.*)$
+        ports:
+        - containerPort: 9100
+        volumeMounts:
+        - name: sys
+          mountPath: /host/sys
+          mountPropagation: HostToContainer
+          readOnly: true
+        - name: root
+          mountPath: /host/root
+          mountPropagation: HostToContainer
+          readOnly: true
+
+      volumes:
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: root
+        hostPath:
+          path: /
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: node-exporter
+  namespace: mgmt
+  labels:
+    app: node-exporter
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9100"
+
+spec:
+  selector:
+    app: node-exporter
+
+  ports:
+  - name: node-exporter
+    port: 9100
+    targetPort: 9100

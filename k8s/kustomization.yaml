@@ -33,6 +33,12 @@ configMapGenerator:
   namespace: danbooru
   env: config/danbooru.env
 
+# The Prometheus config
+- name: prometheus-config
+  namespace: mgmt
+  files:
+  - config/prometheus/prometheus.yml
+
 secretGenerator:
 # The danbooru_local_config.rb for danbooru.donmai.us and betabooru.donmai.us
 - name: danbooru-local-config
@@ -84,3 +90,5 @@ resources:
 - service-accounts.yaml
 - downbooru.yaml
 - namespaces.yaml
+- prometheus.yaml
+- prometheus-node-exporter.yaml
