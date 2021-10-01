@@ -33,6 +33,12 @@ configMapGenerator:
   namespace: danbooru
   env: config/danbooru.env
 
+- name: postgres-config
+  namespace: danbooru
+  files:
+  - config/postgres/postgresql.conf
+  - config/postgres/pg_hba.conf
+
 # The Prometheus config
 - name: prometheus-config
   namespace: mgmt
@@ -92,3 +98,4 @@ resources:
 - namespaces.yaml
 - prometheus.yaml
 - prometheus-node-exporter.yaml
+- postgres.yaml

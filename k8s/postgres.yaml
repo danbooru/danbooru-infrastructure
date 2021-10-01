@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: danbooru
+  labels:
+    app: postgres
+
+spec:
+  replicas: 1
+  serviceName: postgres-14
+  selector:
+    matchLabels:
+      app: postgres
+
+  updateStrategy:
+    type: OnDelete
+
+  template:
+    metadata:
+      labels:
+        app: postgres
+
+    spec:
+      nodeName: mori
+      terminationGracePeriodSeconds: 90
+
+      containers:
+      - name: postgres
+        image: ghcr.io/danbooru/postgres:14.0
+        imagePullPolicy: Always
+        args: ["-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/pg_hba.conf"]
+
+        ports:
+        - containerPort: 5432
+
+        volumeMounts:
+        - name: postgres-config
+          mountPath: /etc/postgresql
+          readOnly: true
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+          mountPropagation: HostToContainer
+        - name: dev-shm
+          mountPath: /dev/shm
+
+        readinessProbe:
+          exec:
+            command: ["psql", "-U", "danbooru", "danbooru2", "-c", "SELECT * FROM ar_internal_metadata LIMIT 1;"]
+          periodSeconds: 15
+          timeoutSeconds: 3
+          failureThreshold: 2
+          initialDelaySeconds: 3
+
+      volumes:
+      - name: postgres-data
+        hostPath:
+          path: /srv/danbooru-test-pg14
+      - name: postgres-config
+        configMap:
+          name: postgres-config
+      - name: dev-shm
+        emptyDir:
+          medium: Memory
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-14
+  namespace: danbooru
+  labels:
+    app: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
