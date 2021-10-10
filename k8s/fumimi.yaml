@@ -24,7 +24,7 @@ spec:
 
       containers:
       - name: fumimi
-        image: evazion/fumimi-discord
+        image: ghcr.io/danbooru/fumimi-discord:latest
         imagePullPolicy: Always
 
         envFrom:
