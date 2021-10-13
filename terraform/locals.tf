@@ -5,11 +5,6 @@ locals {
       ipv4 = data.ovh_dedicated_server.inuyama_donmai_us.ip
     }
 
-    kagamihara = {
-      id   = var.server_ids.kagamihara
-      ipv4 = data.ovh_dedicated_server.kagamihara_donmai_us.ip
-    }
-
     korone = {
       id   = var.server_ids.korone
       ipv4 = data.ovh_dedicated_server.korone_donmai_us.ip
@@ -18,16 +13,6 @@ locals {
     oogaki = {
       id   = var.server_ids.oogaki
       ipv4 = data.ovh_dedicated_server.oogaki_donmai_us.ip
-    }
-
-    saitou = {
-      id   = var.server_ids.saitou
-      ipv4 = data.ovh_dedicated_server.saitou_donmai_us.ip
-    }
-
-    shima = {
-      id   = var.server_ids.shima
-      ipv4 = data.ovh_dedicated_server.shima_donmai_us.ip
     }
 
     gura = {
