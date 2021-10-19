@@ -28,7 +28,7 @@ resource "cloudflare_healthcheck" "danbooru_donmai_us" {
 
   notification_suspended = false
   notification_email_addresses = [
-    "webmaster@danbooru.donmai.us"
+    "noizave@gmail.com"
   ]
 }
 
@@ -39,8 +39,13 @@ resource "cloudflare_healthcheck" "cdn_donmai_us" {
   address = "cdn.donmai.us"
   type = "HTTPS"
   port = "443"
-  path = "/robots.txt"
+  path = "/original/d3/4e/d34e4cf0a437a5d65f8e82b7bcd02606.jpg?source=cloudflare-healthcheck"
   expected_codes = ["200"]
+
+  header {
+    header = "Cache-Control"
+    values = ["no-cache"]
+  }
 
   header {
     header = "Host"
@@ -62,6 +67,6 @@ resource "cloudflare_healthcheck" "cdn_donmai_us" {
 
   notification_suspended = false
   notification_email_addresses = [
-    "webmaster@danbooru.donmai.us"
+    "noizave@gmail.com"
   ]
 }
