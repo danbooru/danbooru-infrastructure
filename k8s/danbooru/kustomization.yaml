@@ -39,6 +39,11 @@ configMapGenerator:
   - config/postgres/postgresql.conf
   - config/postgres/pg_hba.conf
 
+- name: redis-config
+  namespace: danbooru
+  files:
+  - config/redis/redis.conf
+
 secretGenerator:
 # The danbooru_local_config.rb for danbooru.donmai.us and betabooru.donmai.us
 - name: danbooru-local-config
@@ -67,7 +72,7 @@ resources:
 - betabooru.yaml
 - downbooru.yaml
 - postgres.yaml
-- redis-service.yaml
+- redis.yaml
 - recommender-service.yaml
 - iqdb.yaml
 - fumimi.yaml

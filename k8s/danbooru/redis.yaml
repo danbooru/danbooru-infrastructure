@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: danbooru
+  labels:
+    app: redis
+
+spec:
+  replicas: 1
+  serviceName: redis-svc
+  selector:
+    matchLabels:
+      app: redis
+
+  updateStrategy:
+    type: OnDelete
+
+  template:
+    metadata:
+      labels:
+        app: redis
+
+    spec:
+      nodeName: mori
+
+      containers:
+      - name: redis
+        image: redis:6.2.6
+        imagePullPolicy: Always
+        args: ["redis-server", "/usr/local/etc/redis.conf"]
+
+        ports:
+        - containerPort: 6379
+
+        volumeMounts:
+        - name: redis-config
+          mountPath: /usr/local/etc
+          readOnly: true
+        - name: redis-data
+          mountPath: /data
+          mountPropagation: HostToContainer
+
+        readinessProbe:
+          exec:
+            command: ["redis-cli", "ping"]
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+          initialDelaySeconds: 5
+
+      volumes:
+      - name: redis-data
+        hostPath:
+          path: /srv/danbooru-redis
+      - name: redis-config
+        configMap:
+          name: redis-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-svc
+  namespace: danbooru
+  labels:
+    app: redis
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
