@@ -14,14 +14,6 @@ resource "cloudflare_record" "danbooru_donmai_us" {
   proxied = true
 }
 
-resource "cloudflare_record" "inuyama_donmai_us" {
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "A"
-  name    = "inuyama"
-  value   = local.servers.inuyama.ipv4
-  proxied = false
-}
-
 resource "cloudflare_record" "isshiki_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"

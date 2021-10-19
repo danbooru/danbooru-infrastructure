@@ -1,10 +1,5 @@
 locals {
   servers = {
-    inuyama = {
-      id   = var.server_ids.inuyama
-      ipv4 = data.ovh_dedicated_server.inuyama_donmai_us.ip
-    }
-
     korone = {
       id   = var.server_ids.korone
       ipv4 = data.ovh_dedicated_server.korone_donmai_us.ip
