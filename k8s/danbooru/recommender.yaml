@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: recommender
+  namespace: danbooru
+  labels:
+    app: recommender
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: recommender
+
+  template:
+    metadata:
+      labels:
+        app: recommender
+
+    spec:
+      nodeName: mori
+
+      containers:
+      - name: recommender
+        image: ghcr.io/danbooru/recommender
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 5000
+
+        envFrom:
+        - configMapRef:
+            name: recommender-config-env
+        - secretRef:
+            name: recommender-secret-env
+
+        volumeMounts:
+        - name: recommender-data
+          mountPath: /recommender/data
+          mountPropagation: HostToContainer
+
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 5000
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 6
+          initialDelaySeconds: 5
+
+      volumes:
+      - name: recommender-data
+        hostPath:
+          path: /srv/recommender-data
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommender
+  namespace: danbooru
+spec:
+  selector:
+    app: recommender
+  ports:
+  - port: 5000
+    targetPort: 5000
