@@ -9,6 +9,26 @@ configMapGenerator:
   - config/prometheus/prometheus.yml
 
 secretGenerator:
+# The danbooru_local_config.rb for danbooru.donmai.us and betabooru.donmai.us
+- name: danbooru-local-config
+  namespace: danbooru
+  files:
+  - secrets/danbooru_local_config.rb
+  - secrets/id_rsa
+
+# The danbooru.donmai.us and betabooru.donmai.us secret .env config
+- name: danbooru-secret-env
+  namespace: danbooru
+  env: secrets/danbooru.env
+
+- name: recommender-secret-env
+  namespace: danbooru
+  env: secrets/recommender.env
+
+- name: fumimi-secret-env
+  namespace: danbooru
+  env: secrets/fumimi.env
+
 # This Cloudflare API token is used by cert-manager to solve DNS01 challenges.
 # This secret has to be in the cert-manager namespace for cert-manager to find
 # it (see https://github.com/jetstack/cert-manager/issues/263). The hash suffix
@@ -25,6 +45,7 @@ secretGenerator:
 
 resources:
 - ../danbooru
+- namespaces.yaml
 - cert-manager.yaml
 - cluster-issuer.yaml
 - certificate.yaml
@@ -33,3 +54,37 @@ resources:
 - pgadmin.yaml
 - prometheus.yaml
 - prometheus-node-exporter.yaml
+
+patches:
+- path: patches/danbooru.yaml
+  target:
+    name: danbooru
+    kind: Deployment
+- path: patches/danbooru-cron.yaml
+  target:
+    name: danbooru-cron
+    kind: Deployment
+- path: patches/danbooru-jobs.yaml
+  target:
+    name: danbooru-jobs
+    kind: Deployment
+- path: patches/recommender.yaml
+  target:
+    name: recommender
+    kind: Deployment
+- path: patches/iqdb.yaml
+  target:
+    name: iqdb
+    kind: Deployment
+- path: patches/fumimi.yaml
+  target:
+    name: fumimi
+    kind: Deployment
+- path: patches/redis.yaml
+  target:
+    name: redis
+    kind: StatefulSet
+- path: patches/postgres.yaml
+  target:
+    name: postgres
+    kind: StatefulSet

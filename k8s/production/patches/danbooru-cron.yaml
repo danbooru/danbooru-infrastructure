@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: danbooru-cron
+spec:
+  template:
+    spec:
+      # Only run on the app servers.
+      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - { key: kubernetes.io/hostname, operator: In, values: [gura, ame, ina] }

@@ -48,29 +48,6 @@ configMapGenerator:
   files:
   - config/redis/redis.conf
 
-secretGenerator:
-# The danbooru_local_config.rb for danbooru.donmai.us and betabooru.donmai.us
-- name: danbooru-local-config
-  namespace: danbooru
-  files:
-  - secrets/danbooru_local_config.rb
-  - secrets/id_rsa
-
-# The danbooru.donmai.us and betabooru.donmai.us secret .env config
-- name: danbooru-secret-env
-  namespace: danbooru
-  env: secrets/danbooru.env
-
-# The Fumimi Discord bot secret .env config
-- name: fumimi-secret-env
-  namespace: danbooru
-  env: secrets/fumimi.env
-
-# The Fumimi Discord bot secret .env config
-- name: recommender-secret-env
-  namespace: danbooru
-  env: secrets/recommender.env
-
 resources:
 - namespaces.yaml
 - ingress-nginx.yaml

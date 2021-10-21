@@ -22,8 +22,6 @@ spec:
         app: redis
 
     spec:
-      nodeName: mori
-
       containers:
       - name: redis
         image: redis:6.2.6
@@ -50,9 +48,6 @@ spec:
           initialDelaySeconds: 5
 
       volumes:
-      - name: redis-data
-        hostPath:
-          path: /srv/danbooru-redis
       - name: redis-config
         configMap:
           name: redis-config

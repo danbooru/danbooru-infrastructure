@@ -23,8 +23,6 @@ spec:
         app: iqdb
 
     spec:
-      nodeName: korone
-
       containers:
       - name: iqdb
         image: evazion/iqdb
@@ -47,11 +45,6 @@ spec:
           timeoutSeconds: 3
           failureThreshold: 6
           initialDelaySeconds: 5
-
-      volumes:
-      - name: iqdb
-        hostPath:
-          path: /home/danbooru/iqdb
 
 ---
 

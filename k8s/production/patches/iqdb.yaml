@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iqdb
+spec:
+  template:
+    spec:
+      nodeName: korone
+
+      volumes:
+      - name: iqdb
+        hostPath:
+          path: /home/danbooru/iqdb

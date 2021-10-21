@@ -20,8 +20,6 @@ spec:
         app: recommender
 
     spec:
-      nodeName: mori
-
       containers:
       - name: recommender
         image: ghcr.io/danbooru/recommender
@@ -49,11 +47,6 @@ spec:
           timeoutSeconds: 3
           failureThreshold: 6
           initialDelaySeconds: 5
-
-      volumes:
-      - name: recommender-data
-        hostPath:
-          path: /srv/recommender-data
 
 ---
 

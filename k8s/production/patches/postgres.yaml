@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  template:
+    spec:
+      nodeName: mori
+
+      volumes:
+      - name: postgres-data
+        hostPath:
+          path: /srv/danbooru-postgres-14

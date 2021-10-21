@@ -8,7 +8,7 @@ metadata:
     app: danbooru-jobs
 
 spec:
-  replicas: 8
+  replicas: 1
 
   selector:
     matchLabels:
@@ -20,8 +20,6 @@ spec:
         app: danbooru-jobs
 
     spec:
-      # hostname: danbooru-jobs
-
       containers:
       - name: danbooru
         image: ghcr.io/danbooru/danbooru:production
@@ -49,20 +47,3 @@ spec:
       - name: danbooru-local-config
         secret:
           secretName: danbooru-local-config
-
-      topologySpreadConstraints:
-      - maxSkew: 1
-        topologyKey: kubernetes.io/hostname
-        whenUnsatisfiable: ScheduleAnyway
-        labelSelector:
-          matchLabels:
-            app: danbooru-jobs
-
-      # Only run on the app servers.
-      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - { key: kubernetes.io/hostname, operator: In, values: [gura, ame, ina] }

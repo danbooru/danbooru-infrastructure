@@ -22,7 +22,6 @@ spec:
         app: postgres
 
     spec:
-      nodeName: mori
       terminationGracePeriodSeconds: 90
 
       containers:
@@ -57,9 +56,6 @@ spec:
           initialDelaySeconds: 3
 
       volumes:
-      - name: postgres-data
-        hostPath:
-          path: /srv/danbooru-postgres-14
       - name: postgres-config
         configMap:
           name: postgres-config

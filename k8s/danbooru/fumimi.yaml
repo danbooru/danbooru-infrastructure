@@ -20,8 +20,6 @@ spec:
         app: fumimi
 
     spec:
-      # hostname: fumimi
-
       containers:
       - name: fumimi
         image: ghcr.io/danbooru/fumimi-discord:latest
@@ -30,12 +28,3 @@ spec:
         envFrom:
         - secretRef:
             name: fumimi-secret-env
-
-      # Only run on the app servers.
-      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - { key: kubernetes.io/hostname, operator: In, values: [gura, ame, ina] }
