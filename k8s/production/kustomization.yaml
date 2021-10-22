@@ -54,6 +54,7 @@ resources:
 - pgadmin.yaml
 - prometheus.yaml
 - prometheus-node-exporter.yaml
+- ingresses.yaml
 
 patches:
 - path: patches/danbooru.yaml
@@ -67,6 +68,10 @@ patches:
 - path: patches/danbooru-jobs.yaml
   target:
     name: danbooru-jobs
+    kind: Deployment
+- path: patches/danbooru-images.yaml
+  target:
+    name: danbooru-images
     kind: Deployment
 - path: patches/recommender.yaml
   target:

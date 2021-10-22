@@ -1,0 +1,12 @@
+kind: Deployment
+metadata:
+  name: danbooru-images
+spec:
+  template:
+    spec:
+      nodeName: korone
+
+      volumes:
+      - name: danbooru-images
+        hostPath:
+          path: /home/danbooru/images

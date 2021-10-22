@@ -118,27 +118,3 @@ spec:
   ports:
     - port: 80
       targetPort: 8080
-
----
-
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: betabooru
-  namespace: danbooru
-spec:
-  rules:
-    - host: betabooru.donmai.us
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: betabooru
-                port:
-                  number: 80
-  tls:
-    - hosts:
-      - betabooru.donmai.us
-      secretName: donmai-us-tls
