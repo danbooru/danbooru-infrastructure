@@ -37,6 +37,8 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 91.238.105.48 - spamming "-rating:explicit hololive_englishs" searches
 # 107.72.178.93 - scraping /posts.json?page=aNNN too aggressively
 # 139.162.207.44 - scraping "score:N order:id_desc" searches
+# 136.244.116.19
+# 172.105.55.247
 # 175.214.15.124 - spamming "<tag> order:score" searches, scraping html
 # 2a09:7c44::993 - spamming /posts?random=1 searches
 ## 2001:470:98f2::2 - Async PRAW (user:Midorina)
@@ -63,6 +65,8 @@ resource "cloudflare_filter" "banned_ips" {
       107.72.178.93
       116.177.27.12 
       139.162.207.44
+      136.244.116.19
+      172.105.55.247
       175.214.15.124
       188.148.116.39
       2a09:7c44::993
