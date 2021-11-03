@@ -31,7 +31,12 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 8.210.47.67 - spamming "score:150.. order:id_desc" searches
 # 34.90.245.177 - flooding malformed http requests (400 bad request)
 # 34.226.218.10 - spamming "yuri -futa" searches for page 190
+# 35.227.164.200 - excessive RSS feed requests
+# 54.234.228.109 - excessive RSS feed requests
 # 45.146.166.85 - vuln scanning
+# 66.102.8.0/24 - https://danbooru-donmai-us.pornproxysite.com/
+# 66.249.81.0/24 - https://danbooru-donmai-us.pornproxysite.com/
+# 80.251.218.82 - high error rate (invalid api login names)
 # 83.248.2.129 - Setsunator
 # 188.148.116.39 - Setsunator
 # 91.238.105.48 - spamming "-rating:explicit hololive_englishs" searches
@@ -51,6 +56,9 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 54.226.45.112 - spamming "yuri -futa" searches
 # 54.227.221.207 - spamming "yuri -futa" searches
 # 155.138.224.79 - spamming "daughter order:random limit:1" searches at 10/s
+# 217.178.210.115 - curl scraping
+# 153.166.34.16 - curl scraping
+# 138.124.186.137 - vuln crawling, submitting malformed iqdb hashes
 resource "cloudflare_filter" "banned_ips" {
   zone_id    = cloudflare_zone.donmai_us.id
   expression = <<-EOS
@@ -60,17 +68,25 @@ resource "cloudflare_filter" "banned_ips" {
       8.210.47.67
       34.90.245.177
       34.226.218.10
+      35.227.164.200
       45.146.166.85
+      54.234.228.109
+      66.102.8.0/24
+      66.249.81.0/24
+      80.251.218.82
       83.248.2.129
       91.238.105.48
       107.72.178.93
       116.177.27.12 
+      138.124.186.137
       139.162.207.44
       136.244.116.19
+      153.166.34.16
       172.105.55.247
       175.214.15.124
       192.46.232.197
       188.148.116.39
+      217.178.210.115
       2a09:7c44::993
       2600:3c01::f03c:92ff:fe0f:9014
       2601:8a:400:8710::/64
@@ -106,7 +122,7 @@ resource "cloudflare_firewall_rule" "block_danbooru_me" {
   zone_id     = cloudflare_zone.donmai_us.id
   filter_id   = cloudflare_filter.block_danbooru_me.id
   description = "Block Danbooru.me"
-  action      = "js_challenge"
+  action      = "block"
   priority    = 6000
 }
 
