@@ -32,6 +32,7 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 34.90.245.177 - flooding malformed http requests (400 bad request)
 # 34.226.218.10 - spamming "yuri -futa" searches for page 190
 # 35.227.164.200 - excessive RSS feed requests
+# 35.230.36.120 - excessive RSS feed requests
 # 54.234.228.109 - excessive RSS feed requests
 # 45.146.166.85 - vuln scanning
 # 66.102.8.0/24 - https://danbooru-donmai-us.pornproxysite.com/
@@ -69,6 +70,7 @@ resource "cloudflare_filter" "banned_ips" {
       34.90.245.177
       34.226.218.10
       35.227.164.200
+      35.230.36.120
       45.146.166.85
       54.234.228.109
       66.102.8.0/24
