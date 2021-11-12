@@ -38,6 +38,15 @@ nodes:
     user: k8s
     port: 60022
     role: [worker]
+  - address: kiara.donmai.us
+    hostname_override: kiara
+    internal_address: 172.16.0.11
+    user: k8s
+    port: 60022
+    role: [worker]
+    labels:
+      topology.kubernetes.io/region: ovh-us
+      topology.kubernetes.io/zone: ovh-us-vin1
 
 services:
   # https://rancher.com/docs/rke/latest/en/config-options/services/#kubernetes-api-server

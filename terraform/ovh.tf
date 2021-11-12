@@ -24,3 +24,7 @@ data "ovh_dedicated_server" "ina_donmai_us" {
 data "ovh_dedicated_server" "mori_donmai_us" {
   service_name = var.server_ids.mori
 }
+
+data "ovh_dedicated_server" "kiara_donmai_us" {
+  service_name = var.server_ids.kiara
+}

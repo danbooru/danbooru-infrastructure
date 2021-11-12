@@ -109,6 +109,14 @@ resource "cloudflare_record" "mori_donmai_us" {
   proxied = false
 }
 
+resource "cloudflare_record" "kiara_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "kiara"
+  value   = local.servers.kiara.ipv4
+  proxied = false
+}
+
 resource "cloudflare_record" "yukinoshita_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
