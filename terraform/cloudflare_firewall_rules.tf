@@ -60,6 +60,7 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 217.178.210.115 - curl scraping
 # 153.166.34.16 - curl scraping
 # 138.124.186.137 - vuln crawling, submitting malformed iqdb hashes
+# 220.136.68.65 - excessive scraping of /posts.json
 resource "cloudflare_filter" "banned_ips" {
   zone_id    = cloudflare_zone.donmai_us.id
   expression = <<-EOS
@@ -98,6 +99,7 @@ resource "cloudflare_filter" "banned_ips" {
       54.226.45.112
       54.227.221.207
       155.138.224.79
+      220.136.68.65
     }
   EOS
 }
