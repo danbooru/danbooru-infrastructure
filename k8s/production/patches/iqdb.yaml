@@ -5,9 +5,9 @@ metadata:
 spec:
   template:
     spec:
-      nodeName: korone
+      nodeName: mori
 
       volumes:
       - name: iqdb
         hostPath:
-          path: /home/danbooru/iqdb
+          path: /srv/iqdb

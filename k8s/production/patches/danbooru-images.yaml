@@ -9,7 +9,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - { key: kubernetes.io/hostname, operator: In, values: [korone, kiara] }
+              - { key: kubernetes.io/hostname, operator: In, values: [kiara] }
 
       volumes:
       - name: danbooru-images

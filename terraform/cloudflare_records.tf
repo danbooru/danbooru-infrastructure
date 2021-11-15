@@ -159,14 +159,39 @@ resource "cloudflare_record" "ssh_korone_donmai_us" {
 
 resource "cloudflare_record" "cdn_donmai_us" {
   count   = 2
+#  count   = 3
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
   name    = "cdn"
   proxied = true
   value = [
     local.servers.kinako.ipv4,
-    local.servers.korone.ipv4,
+#    local.servers.korone.ipv4,
+    local.servers.kiara.ipv4,
+#    local.servers.gura.ipv4,
+#    local.servers.ame.ipv4,
+#    local.servers.ina.ipv4,
   ][count.index]
+}
+
+resource "cloudflare_record" "cdn0_donmai_us" {
+  count = 2
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "cdn0"
+  proxied = true
+  value   = [
+    local.servers.korone.ipv4,
+    local.servers.kiara.ipv4,
+  ][count.index]
+}
+
+resource "cloudflare_record" "cdn1_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "cdn1"
+  proxied = true
+  value   = local.servers.kinako.ipv4
 }
 
 #
