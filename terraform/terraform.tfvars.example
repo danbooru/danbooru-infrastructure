@@ -20,7 +20,6 @@ scaleway_dedibox_api_token = ""
 server_ids = {
   inuyama = null
   kagamihara = null
-  korone = null
   shima = null
   oogaki = null
   saitou = null

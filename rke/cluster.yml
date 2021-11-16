@@ -8,12 +8,6 @@ kubernetes_version: v1.20.5-rancher1-1
 
 # https://rancher.com/docs/rke/latest/en/config-options/nodes/
 nodes:
-  - address: ssh.korone.donmai.us
-    internal_address: 172.16.0.6
-    hostname_override: korone
-    user: k8s
-    port: 22
-    role: [controlplane, etcd, worker]
   - address: ame.donmai.us
     hostname_override: ame
     internal_address: 172.16.0.7

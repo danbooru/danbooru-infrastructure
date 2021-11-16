@@ -1,10 +1,5 @@
 locals {
   servers = {
-    korone = {
-      id   = var.server_ids.korone
-      ipv4 = data.ovh_dedicated_server.korone_donmai_us.ip
-    }
-
     oogaki = {
       id   = var.server_ids.oogaki
       ipv4 = data.ovh_dedicated_server.oogaki_donmai_us.ip
