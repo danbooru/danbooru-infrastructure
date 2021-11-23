@@ -61,6 +61,8 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 153.166.34.16 - curl scraping
 # 138.124.186.137 - vuln crawling, submitting malformed iqdb hashes
 # 220.136.68.65 - excessive scraping of /posts.json
+# 20.38.173.55 - overaggressive scraping of /posts.json
+# 52.173.139.234 - overaggressive scraping of /posts.json
 resource "cloudflare_filter" "banned_ips" {
   zone_id    = cloudflare_zone.donmai_us.id
   expression = <<-EOS
@@ -100,6 +102,9 @@ resource "cloudflare_filter" "banned_ips" {
       54.227.221.207
       155.138.224.79
       220.136.68.65
+      20.38.173.55
+      20.106.78.137
+      52.173.139.234
     }
   EOS
 }
@@ -112,6 +117,14 @@ resource "cloudflare_firewall_rule" "suspect_logins" {
   priority    = 750
 }
 
+resource "cloudflare_firewall_rule" "dmail_spam" {
+  zone_id     = cloudflare_zone.donmai_us.id
+  filter_id   = cloudflare_filter.dmail_spam.id
+  description = "DMail spam (/dmails/new)"
+  action      = "challenge"
+  priority    = 760
+}
+
 # https://developers.cloudflare.com/firewall/known-issues-and-faq#how-can-i-use-the-threat-score-effectively
 # cf.threat_score > 10 is medium security
 resource "cloudflare_filter" "suspect_logins" {
@@ -119,6 +132,13 @@ resource "cloudflare_filter" "suspect_logins" {
   expression = <<-EOS
     (http.request.uri.path eq "/login" or http.request.uri.path eq "/session/new") and
     (not http.referer contains "donmai.us" or cf.threat_score gt 10)
+  EOS
+}
+
+resource "cloudflare_filter" "dmail_spam" {
+  zone_id    = cloudflare_zone.donmai_us.id
+  expression = <<-EOS
+    (http.request.uri.path eq "/dmails/new" or http.request.uri.path eq "/users/new") and (http.referer contains "forum_topics")
   EOS
 }
 
