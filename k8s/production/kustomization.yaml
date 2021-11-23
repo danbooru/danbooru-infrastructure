@@ -9,11 +9,18 @@ configMapGenerator:
   - config/prometheus/prometheus.yml
 
 secretGenerator:
-# The danbooru_local_config.rb for danbooru.donmai.us and betabooru.donmai.us
+# The danbooru_local_config.rb for danbooru.donmai.us
 - name: danbooru-local-config
   namespace: danbooru
   files:
   - secrets/danbooru_local_config.rb
+  - secrets/id_rsa
+
+# The danbooru_local_config.rb for betabooru.donmai.us
+- name: betabooru-local-config
+  namespace: danbooru
+  files:
+  - secrets/betabooru/danbooru_local_config.rb
   - secrets/id_rsa
 
 # The danbooru.donmai.us and betabooru.donmai.us secret .env config
@@ -72,6 +79,10 @@ patches:
 - path: patches/danbooru-images.yaml
   target:
     name: danbooru-images
+    kind: Deployment
+- path: patches/betabooru.yaml
+  target:
+    name: betabooru
     kind: Deployment
 - path: patches/recommender.yaml
   target:

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: betabooru
+spec:
+  template:
+    spec:
+      containers:
+      - name: danbooru
+        volumeMounts:
+        - mountPath: /srv
+          name: danbooru-images
+          mountPropagation: HostToContainer
+      volumes:
+      - name: danbooru-images
+        hostPath:
+          path: /srv
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - { key: kubernetes.io/hostname, operator: In, values: [gura, ame, ina] }

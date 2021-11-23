@@ -155,7 +155,7 @@ apt-get install -y --no-install-recommends \
   zfs-initramfs zfs-zed bash-completion openssh-server ssh-import-id git \
   publicsuffix ufw man-db apt-transport-https curl ca-certificates gnupg \
   lsb-release neovim usbutils net-tools psmisc lsof vlan pciutils hdparm \
-  ipvsadm nvme-cli smartmontools socat linux-tools-generic
+  ipvsadm nvme-cli smartmontools socat linux-tools-generic sshfs
 apt-get purge -y cron rsyslog networkd-dispatcher
 
 # Install Docker
@@ -215,6 +215,8 @@ EOF
 
 cat <<EOF > /etc/fstab
 /dev/vg0/boot /boot ext4 defaults,noatime 0 0
+danbooru@kinako.donmai.us:/srv/kinako /srv/kinako fuse.sshfs x-systemd.automount,_netdev,defaults,reconnect,ServerAliveInterval=20,ServerAliveCountMax=3,identityfile=/home/danbooru/.ssh/id_rsa,idmap=user,uid=1000,gid=1000,allow_other 0 0
+danbooru@kiara.donmai.us:/srv/images /srv/kiara fuse.sshfs x-systemd.automount,_netdev,defaults,reconnect,ServerAliveInterval=20,ServerAliveCountMax=3,identityfile=/home/danbooru/.ssh/id_rsa,idmap=user,uid=1000,gid=1000,allow_other,port=60022 0 0
 EOF
 
 # Disable Spectre mitigations on kernel command line
@@ -324,6 +326,10 @@ vgck --updatemetadata vg0
 update-grub
 grub-install --verbose /dev/nvme0n1
 
+# Set up SSHFS mountpoints
+mkdir /srv/kinako
+mkdir /srv/kiara
+
 # Exit chroot
 exit
 
@@ -359,3 +365,6 @@ sudo ufw reject in on eno1
 
 # Enable firewall, disable it if we get locked out and can't hit ^C
 sudo ufw enable && sleep 30 && sudo ufw disable
+
+# Install the SSH key for the image servers (for sshfs)
+scp k8s/production/secrets/id_rsa $SERVER_HOSTNAME:~/.ssh/id_rsa
