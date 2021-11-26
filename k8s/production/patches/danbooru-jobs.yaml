@@ -7,6 +7,18 @@ spec:
 
   template:
     spec:
+      containers:
+      - name: danbooru
+        volumeMounts:
+        - mountPath: /srv
+          name: danbooru-images
+          mountPropagation: HostToContainer
+
+      volumes:
+      - name: danbooru-images
+        hostPath:
+          path: /srv
+
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname

@@ -7,6 +7,13 @@ spec:
 
   template:
     spec:
+      containers:
+      - name: danbooru
+        volumeMounts:
+        - mountPath: /srv
+          name: danbooru-images
+          mountPropagation: HostToContainer
+
       # Try to run one instance per node. Avoid multiple instances on the same node
       # https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
       topologySpreadConstraints:
@@ -16,6 +23,11 @@ spec:
         labelSelector:
           matchLabels:
             app: danbooru
+
+      volumes:
+      - name: danbooru-images
+        hostPath:
+          path: /srv
 
       # Only run on the app servers.
       # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
