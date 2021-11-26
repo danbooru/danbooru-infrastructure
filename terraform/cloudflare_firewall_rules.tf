@@ -63,6 +63,15 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 220.136.68.65 - excessive scraping of /posts.json
 # 20.38.173.55 - overaggressive scraping of /posts.json
 # 52.173.139.234 - overaggressive scraping of /posts.json
+# 3.208.86.85 - searching "86_-eightysix -rating:safe" five times per second for 24+ hours
+#
+# 40.122.49.223 - scraping with multiple IPs and faked user agent (Edg/88.0.705.63)
+# 40.84.146.243
+# 13.65.173.155
+# 13.67.233.76
+# 40.84.236.101
+# 20.106.91.1
+# 52.176.58.42
 resource "cloudflare_filter" "banned_ips" {
   zone_id    = cloudflare_zone.donmai_us.id
   expression = <<-EOS
@@ -105,6 +114,14 @@ resource "cloudflare_filter" "banned_ips" {
       20.38.173.55
       20.106.78.137
       52.173.139.234
+      3.208.86.85
+      40.122.49.223
+      40.84.146.243
+      13.65.173.155
+      13.67.233.76
+      40.84.236.101
+      20.106.91.1
+      52.176.58.42
     }
   EOS
 }
