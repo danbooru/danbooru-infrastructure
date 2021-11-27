@@ -59,5 +59,10 @@ locals {
       id   = var.server_ids.haachama
       ipv4 = data.external.haachama_donmai_us.result.server_ip
     }
+
+    irys = {
+      id   = var.server_ids.irys
+      ipv4 = data.external.irys_donmai_us.result.server_ip
+    }
   }
 }

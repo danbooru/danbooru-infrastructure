@@ -1,115 +1,121 @@
 #!/bin/sh
 
-# This is the install procedure for installing an OS from scratch on OVH. The
+# This is the install procedure for installing an OS from scratch on Hetzner. The
 # steps are presented as a script but will have to be followed manually.
-#
-# Install procedure:
-#
-# * Boot into BIOS
-# * Configure legacy BIOS boot mode and boot disk order
-# * Boot into rescue shell (https://docs.ovh.com/us/en/dedicated/rescue-mode)
-# * Wipe and partition disks
-# * Create ZFS root and /boot filesystems
-# * Use debootstrap to untar base filesystem
-# * Chroot into filesystem
-# * Configure networking, users, ssh, install basic packages
-# * Reboot
-#
-# To enable legacy BIOS boot mode:
-#
-# * Open the remote KVM (in the OVH dashboard under the IPMI tab)
-# * Reboot server and press F11 to enter the BIOS
-# * Under the Boot tab, in the "Boot option filter" setting, enable "UEFI and Legacy"
-# * Reboot
-# * Under the Boot tab, change the boot order to add the first NVME drive as the first boot device
-# * Reboot
-#
-# To enter rescue mode (https://docs.ovh.com/us/en/dedicated/rescue-mode):
-#
-# * In the OVH dashboard, choose the rescue mode boot option
-# * Reboot server
-# * Wait for the email containing the root password and SSH connection string
-# * SSH into server
 
 # Hardware info commands:
 #
 # ./geekbench (https://www.geekbench.com/download/linux/)
 # smartctl -a /dev/nvme0n1
 # hdparm -tT /dev/nvme0n1
+# ioping -R -s4096 /dev/nvme0n1
 # inxi -F
 # lscpu
 # lspci
+# dmidecode
 
-# Intel Xeon E-2288G
-# ASRockRack E3C246D4U2-2T
-# 2x16GB ECC 2666Mhz (Samsung M391A2K43BB1-CTD)
-# 2x NVME 960GB (Samsung PM-983 / MZQLB960HAJR-00007)
-# 2x 10Gbps Intel X550 Ethernet Adapter
+# Intel Xeon W-2245 CPU (8c @ 3.90GHz)
+# ASUSTeK WS C422 DC
+# 8x32GB DDR4 ECC 2933Mhz (Micron 36ASF4G72PZ-2G9E2)
+# 2x3.84TB Samsung MZQL23T8HCLS-00A07
+# 14x16TB WDC  WUH721816ALE6L0
+# Intel I210 Gigabit
+
 #
 # Disk layout:
 #
-# * Partition 1: 2M Grub partition
+# 2x NVMe 3.84TB
+# * Partition 1: 1G EFI partition
 # * Partition 2: 100% Primary partition
-# * /boot 1GB   ext4 on lvm raid1
-# * /     959GB zfs mirror
+# ** 3.84TB LVM PV
+# *** LV 1GB    /boot ext4 (lvm raid1)
+# *** LV 100GB  /     zfs  (pool: zroot mirror)
+# *** LV 3.74TB /srv  zfs  (pool: zdata striped)
+#
+# 14x16TB HDD
+# * ZFS RAID 10
 
 # https://help.ubuntu.com/lts/installation-guide/amd64/apds04.html
 # https://openzfs.github.io/openzfs-docs/Getting%20Started/Ubuntu/Ubuntu%2020.04%20Root%20on%20ZFS.html
 # https://wiki.archlinux.org/title/Install_Arch_Linux_on_ZFS#Installation
 
 # The hostname of the server
-SERVER_HOSTNAME=xxx
+SERVER_HOSTNAME=irys
 
-# The server's IPV6 address. Obtained from the OVH control panel.
-IPV6=2604:xxxx:xxxx:xxxx::1/64
+# The server's IPV4 address. Obtained from the Hetzner control panel.
+IPV6=xxxx:xxxx:xxxx:xxxx::1/64
 
-# The server's IPV6 router. Same as the ipv6 address, with the low order /80 bits set to ff.
-IPV6_GATEWAY=2604:xxxx:xxxx:xxff:ff:ff:ff:ff
+# The server's IPV6 address. Obtained from the Hetzner control panel.
+IPV6=xxxx:xxxx:xxxx:xxxx::1/64
+
+# The server's IPV4 gateway address. Obtained from the Hetzner control panel.
+IPV4_GATEWAY=xxxx:xxxx:xxxx:xxxx::1/64
 
 # The private network IP. Manually assigned.
-VRACK_SUBNET=172.16.0.x/24
+VLAN_SUBNET=172.16.0.1/24
 
 # The danbooru account's SSH key
 SSH_PUBKEY=gh:evazion
 
-# Wipe both drives.
+# Wipe drives.
 blkdiscard -v /dev/nvme0n1
 blkdiscard -v /dev/nvme1n1
 
-# Partition 1 is a 2M partition for Grub. Partition 2 is the main partition that takes up the remaining space.
-parted /dev/nvme0n1 mktable gpt
-parted /dev/nvme0n1 mkpart grub 0% 2M
-parted /dev/nvme0n1 mkpart primary 2M 100%
-parted /dev/nvme0n1 set 1 bios_grub on
-parted /dev/nvme0n1 set 2 boot on
+# Partition 1: 1G EFI
+# Partition 2: 511GB Primary
+for dev in /dev/nvme*n1; do
+  parted $dev mktable gpt
+  parted $dev mkpart efi 0% 1G
+  parted $dev mkpart primary 1G 100%
+  parted $dev set 2 boot on
+end
 
-parted /dev/nvme1n1 mktable gpt
-parted /dev/nvme1n1 mkpart grub 0% 2M
-parted /dev/nvme1n1 mkpart primary 2M 100%
-parted /dev/nvme1n1 set 1 bios_grub on
-parted /dev/nvme1n1 set 2 boot on
+# Partition 1: 16TB Primary
+for dev in /dev/sd*; do
+  parted $dev mktable gpt
+  parted $dev mkpart primary 0% 100%
+end
 
-# Create a 1GB raid1 boot volume.
 vgcreate vg0 /dev/nvme0n1p2 /dev/nvme1n1p2
+
+# Create a mirrored 1GB boot volume.
 lvcreate -n boot --type raid1 -L 1G vg0 /dev/nvme0n1p2 /dev/nvme1n1p2
 
-# Create a volume on each device that takes up the remaining space.
-lvcreate -n nvme0 -l 100%free vg0 /dev/nvme0n1p2
-lvcreate -n nvme1 -l 100%free vg0 /dev/nvme1n1p2
+# Create two 100GB root volumes.
+lvcreate -n root0 -L 100G vg0 /dev/nvme0n1p2
+lvcreate -n root1 -L 100G vg0 /dev/nvme1n1p2
 
-# Create a zpool named `zroot` mirrored across the nvme0 and nvme1 volumes on each device.
-modprobe zfs
-zpool create -f -o ashift=9 -O compression=lz4 -O acltype=posixacl -O atime=off -O xattr=sa -O normalization=formD -O mountpoint=none -O canmount=off -O devices=off -R /mnt zroot mirror /dev/vg0/nvme0 /dev/vg0/nvme1
+# Create a zpool named `zroot` mirrored on `vg0/root0` and `vg0/root1`
+apt-get update
+apt-get install -t bullseye-backports zfs-dkms zfsutils-linux
+zpool create -f -o ashift=12 -O compression=lz4 -O acltype=posixacl -O atime=off -O xattr=sa -O normalization=formD -O mountpoint=none -O canmount=off -O devices=off -R /mnt zroot mirror /dev/vg0/root0 /dev/vg0/root1
 zfs create -o mountpoint=none zroot/ROOT
 zfs create -o mountpoint=none zroot/data
 zfs create -o mountpoint=/ -o devices=on zroot/ROOT/default
 zfs create -o mountpoint=/home zroot/data/home
 zfs create -o mountpoint=/var zroot/data/var
 
+# Create two 3.74TB data volumes.
+lvcreate -n nvme0 -l 100%free vg0 /dev/nvme0n1p2
+lvcreate -n nvme1 -l 100%free vg0 /dev/nvme1n1p2
+
+# Create striped 2x3.74TB ZFS volume.
+mkdir /srv/nvme
+zpool create -f -o ashift=12 -O compression=lz4 -O acltype=posixacl -O atime=off -O xattr=sa -O normalization=formD -O mountpoint=none -O canmount=off -O devices=off -R /mnt nvme /dev/vg0/nvme0 /dev/vg0/nvme1
+
+# Create RAID10 7x2x16TB ZFS volume.
+mkdir /srv/hdd
+zpool create -f -o ashift=12 -O compression=lz4 -O acltype=posixacl -O atime=off -O xattr=sa -O normalization=formD -O mountpoint=none -O canmount=off -O devices=off -R /srv/hdd hdd mirror /dev/sda1 /dev/sdb1 mirror /dev/sdc1 /dev/sdd1 mirror /dev/sde1 /dev/sdf1 mirror /dev/sdg1 /dev/sdh1 mirror /dev/sdi1 /dev/sdj1 mirror /dev/sdk1 /dev/sdl1 mirror /dev/sdm1 /dev/sdn1
+
 # Create and mount the /boot filesystem.
 mkfs -t ext4 /dev/vg0/boot
 mkdir /mnt/boot
 mount /dev/vg0/boot /mnt/boot
+
+# Create and mount EFI partition
+mkfs.fat -F32 /dev/nvme0n1p1
+mkdir /mnt/boot/efi
+mount /dev/nvme0n1p1 /mnt/boot/efi
 
 # Get signing keys needed to run debootstrap
 wget http://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2021.03.26.tar.gz
@@ -151,44 +157,47 @@ dpkg-reconfigure --frontend noninteractive locales
 apt-get update
 apt-get upgrade -y
 apt-get install -y --no-install-recommends \
-  linux-image-generic linux-headers-generic grub-pc parted lvm2 zfsutils-linux \
+  linux-image-generic linux-headers-generic grub-efi parted lvm2 zfsutils-linux \
   zfs-initramfs zfs-zed bash-completion openssh-server ssh-import-id git \
   publicsuffix ufw man-db apt-transport-https curl ca-certificates gnupg \
   lsb-release neovim usbutils net-tools psmisc lsof vlan pciutils hdparm \
-  ipvsadm nvme-cli smartmontools socat linux-tools-generic sshfs
+  ipvsadm nvme-cli smartmontools socat linux-tools-generic rsync rasdaemon
 apt-get purge -y cron rsyslog networkd-dispatcher
 
 # Install Docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu hirsute stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 apt-get update
 apt-get install -y --no-install-recommends docker-ce docker-ce-cli containerd.io
 
 # Configure networking
 cat <<EOF > /etc/netplan/netplan.yaml
 # https://netplan.io/reference
-# https://support.us.ovhcloud.com/hc/en-us/articles/360008712939
+# https://docs.hetzner.com/robot/dedicated-server/network/vswitch/
+# https://www.freedesktop.org/software/systemd/man/systemd.net-naming-scheme.html
+# udevadm test-builtin net_id /sys/class/net/eth0 2>/dev/null
 
 network:
   version: 2
   ethernets:
-    eno1:
+    enp6s0:
       dhcp4: yes
-      addresses: [$IPV6]
-      gateway6: $IPV6_GATEWAY
+      addresses: [$IPV4, $IPV6]
+      gateway4: $IPV4_GATEWAY
+      gateway6: fe80::1
       routes:
-      - to: $IPV6_GATEWAY
+      - to: $IPV4_GATEWAY/32
         scope: link
       nameservers:
         addresses:
         - 1.1.1.1
         - 8.8.8.8
-    eno2: {}
   vlans:
-    vlan.99:
-      id: 99
-      link: eno2
-      addresses: [$VRACK_SUBNET]
+    vlan.4000:
+      id: 4000
+      link: enp6s0
+      mtu: 1400
+      addresses: [$VLAN_SUBNET]
 EOF
 
 # Switch SSH port to 60022
@@ -215,9 +224,7 @@ EOF
 
 cat <<EOF > /etc/fstab
 /dev/vg0/boot /boot ext4 defaults,noatime 0 0
-danbooru@kinako.donmai.us:/srv/kinako /srv/kinako fuse.sshfs x-systemd.automount,_netdev,defaults,reconnect,ServerAliveInterval=20,ServerAliveCountMax=3,identityfile=/home/danbooru/.ssh/id_rsa,idmap=user,uid=1000,gid=1000,allow_other 0 0
-danbooru@kiara.donmai.us:/srv/images /srv/kiara fuse.sshfs x-systemd.automount,_netdev,defaults,reconnect,ServerAliveInterval=20,ServerAliveCountMax=3,identityfile=/home/danbooru/.ssh/id_rsa,idmap=user,uid=1000,gid=1000,allow_other,port=60022 0 0
-danbooru@irys.donmai.us:/srv/images /srv/irys fuse.sshfs x-systemd.automount,_netdev,defaults,reconnect,ServerAliveInterval=20,ServerAliveCountMax=3,identityfile=/home/danbooru/.ssh/id_rsa,idmap=user,uid=1000,gid=1000,allow_other,port=60022 0 0
+/dev/nvme0n1p1 /boot/efi vfat defaults 0 0
 EOF
 
 # Disable Spectre mitigations on kernel command line
@@ -227,7 +234,7 @@ GRUB_DEFAULT=0
 GRUB_TIMEOUT_STYLE=hidden
 GRUB_TIMEOUT=0
 GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
-GRUB_CMDLINE_LINUX_DEFAULT="mitigations=off"
+GRUB_CMDLINE_LINUX_DEFAULT="mitigations=off init_on_alloc=0"
 GRUB_CMDLINE_LINUX=""
 EOF
 
@@ -294,6 +301,9 @@ ExecStart=/usr/bin/cpupower frequency-set -g performance
 WantedBy=multi-user.target
 EOF
 
+systemctl enable cpupower-performance
+systemctl enable x86-energy-perf-policy
+
 # Silence log warnings from sudo about /etc/securetty not existing
 touch /etc/securetty
 
@@ -309,6 +319,7 @@ systemd-tmpfiles --create --prefix /var/log/journal
 useradd -m -U -s /bin/bash danbooru
 usermod -aG sudo danbooru
 sudo -u danbooru ssh-import-id $SSH_PUBKEY
+# XXX add danbooru-images public key
 
 # Create a 'k8s' user with sudoless Docker permissions. Needed by RKE to deploy K8s.
 useradd -m -U -s /bin/bash k8s
@@ -325,19 +336,17 @@ passwd danbooru
 # Install bootloader on first device.
 vgck --updatemetadata vg0
 update-grub
-grub-install --verbose /dev/nvme0n1
-
-# Set up SSHFS mountpoints
-mkdir /srv/kinako
-mkdir /srv/kiara
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ubuntu --recheck --no-floppy
 
 # Exit chroot
 exit
 
 # Export pool before reboot, otherwise it may fail to mount on reboot.
-umount /mnt/boot /mnt/proc /mnt/dev /mnt/sys
+umount /mnt/boot/efi /mnt/boot /mnt/proc /mnt/dev /mnt/sys
 zfs umount -a
 zpool export zroot
+zpool export nvme
+zpool export hdd
 
 reboot
 
@@ -346,12 +355,23 @@ reboot
 
 # The following commands are run after reboot
 
+sudo zpool import nvme
+sudo zpool import hdd
+
 # Upgrade zpool features
 sudo zpool upgrade -a
 sudo zfs upgrade -a
 
 # XXX Force "/var/log/journal/$(cat /etc/machine-id)" to be created to enable persistent logging
 sudo systemctl restart systemd-journald
+
+sudo mkdir /srv/nvme /srv/hdd
+sudo zfs create -o mountpoint=none hdd/images
+sudo zfs create -o mountpoint=none nvme/images
+sudo zfs create -o recordsize=1M   -o mountpoint=/srv/images/original hdd/images/original
+sudo zfs create -o recordsize=256k -o mountpoint=/srv/images/sample   hdd/images/sample
+sudo zfs create -o recordsize=16k  -o mountpoint=/srv/images/preview  nvme/images/preview
+sudo zfs create -o recordsize=16k  -o mountpoint=/srv/images/crop     nvme/images/crop
 
 # Configure firewall
 #
@@ -361,11 +381,8 @@ sudo ufw default allow incoming
 sudo ufw default allow outgoing
 sudo ufw default allow routed
 sudo ufw allow to any port 60022 proto tcp
-sudo ufw allow in on eno1 proto tcp to any port 80,443,6443
-sudo ufw reject in on eno1
+sudo ufw allow in on enp6s0 proto tcp to any port 80,443,6443
+sudo ufw reject in on enp6s0
 
 # Enable firewall, disable it if we get locked out and can't hit ^C
 sudo ufw enable && sleep 30 && sudo ufw disable
-
-# Install the SSH key for the image servers (for sshfs)
-scp k8s/production/secrets/id_rsa $SERVER_HOSTNAME:~/.ssh/id_rsa

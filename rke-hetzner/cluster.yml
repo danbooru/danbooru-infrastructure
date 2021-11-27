@@ -1,0 +1,53 @@
+# https://rancher.com/an-introduction-to-rke
+# https://rancher.com/docs/rke/latest/en/
+
+cluster_name: danbooru-hetzner
+ssh_agent_auth: true
+ssh_key_path: ~/.ssh/keys/evazion@github.com-id_ed25519
+kubernetes_version: v1.20.5-rancher1-1
+
+# https://rancher.com/docs/rke/latest/en/config-options/nodes/
+nodes:
+  - address: irys.donmai.us
+    hostname_override: irys
+    internal_address: 172.16.0.1
+    user: k8s
+    port: 60022
+    role: [controlplane, etcd, worker]
+    labels:
+      topology.kubernetes.io/region: hetzner-eu
+      topology.kubernetes.io/zone: hetzner-hel1-dc3
+
+services:
+  # https://rancher.com/docs/rke/latest/en/config-options/services/#kubernetes-api-server
+  kube-api:
+    service_cluster_ip_range: 10.43.0.0/16
+  # https://rancher.com/docs/rke/latest/en/config-options/services/#kubernetes-controller-manager
+  kube-controller:
+    cluster_cidr: 10.42.0.0/16
+    service_cluster_ip_range: 10.43.0.0/16
+  # https://support.rancher.com/hc/en-us/articles/360054671152-How-to-enable-IPVS-proxy-mode-for-kube-proxy#rancher-v2-x-0-3
+  # https://kubernetes.io/docs/concepts/services-networking/service/#proxy-mode-ipvs
+  kubeproxy:
+    extra_args:
+      proxy-mode: ipvs
+      ipvs-scheduler: rr
+#      masquerade-all: true
+  kubelet:
+    extra_binds:
+      - "/:/host:rslave"
+
+# https://rancher.com/docs/rke/latest/en/config-options/add-ons/network-plugins/#canal-network-plug-in-options
+# https://github.com/flannel-io/flannel/blob/master/Documentation/backends.md#host-gw
+network:
+  plugin: flannel
+  options:
+    flannel_backend_type: host-gw
+    flannel_iface: vlan.4000
+
+# https://rancher.com/docs/rke/latest/en/config-options/add-ons/dns/#configuring-coredns
+#dns:
+#  provider: coredns
+#  upstreamnameservers:
+#    - 1.1.1.1
+#    - 8.8.8.8
