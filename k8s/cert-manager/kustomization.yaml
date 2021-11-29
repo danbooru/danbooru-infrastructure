@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+secretGenerator:
+# This Cloudflare API token is used by cert-manager to solve DNS01 challenges.
+# This secret has to be in the cert-manager namespace for cert-manager to find
+# it (see https://github.com/jetstack/cert-manager/issues/263). The hash suffix
+# also has to be disabled so cert-manager can find it (see cluster-issuer.yaml).
+- name: cloudflare-api-token
+  namespace: cert-manager
+  env: secrets/cloudflare-api-token.env
+  options:
+    disableNameSuffixHash: true
+
+resources:
+- cert-manager.yaml
+- cluster-issuer.yaml
+- certificate.yaml

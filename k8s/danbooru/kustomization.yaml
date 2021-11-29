@@ -5,12 +5,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 configMapGenerator:
-# The cdn.donmai.us nginx config
-- name: danbooru-images-nginx-config
-  namespace: danbooru
-  files:
-  - config/nginx.conf
-
 # The danbooru.donmai.us nginx config
 - name: danbooru-nginx-config
   namespace: danbooru
@@ -50,9 +44,7 @@ configMapGenerator:
 
 resources:
 - namespaces.yaml
-- ingress-nginx.yaml
 - danbooru.yaml
-- danbooru-images.yaml
 - danbooru-cron.yaml
 - danbooru-jobs.yaml
 - betabooru.yaml

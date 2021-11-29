@@ -1,0 +1,10 @@
+kind: Deployment
+metadata:
+  name: danbooru-images
+spec:
+  template:
+    spec:
+      volumes:
+      - name: danbooru-images
+        hostPath:
+          path: /srv/images
