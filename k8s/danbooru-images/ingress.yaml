@@ -4,7 +4,7 @@ metadata:
   name: danbooru-images
   namespace: danbooru
   annotations:
-    nginx.ingress.kubernetes.io/server-alias: "raikou1.donmai.us,raikou2.donmai.us,raikou3.donmai.us,raikou4.donmai.us"
+    nginx.ingress.kubernetes.io/server-alias: "cdn0.donmai.us,cdn1.donmai.us,raikou1.donmai.us,raikou2.donmai.us,raikou3.donmai.us,raikou4.donmai.us"
 
 spec:
   rules:

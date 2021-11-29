@@ -186,7 +186,7 @@ resource "cloudflare_record" "cdn1_donmai_us" {
   type    = "A"
   name    = "cdn1"
   proxied = true
-  value   = local.servers.kinako.ipv4
+  value   = local.servers.irys.ipv4
 }
 
 #
