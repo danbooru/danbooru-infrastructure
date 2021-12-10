@@ -63,7 +63,11 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 220.136.68.65 - excessive scraping of /posts.json
 # 20.38.173.55 - overaggressive scraping of /posts.json
 # 52.173.139.234 - overaggressive scraping of /posts.json
-# 3.208.86.85 - searching "86_-eightysix -rating:safe" five times per second for 24+ hours
+#
+# 3.85.50.88 - nonstop searching "86_-eightysix -rating:safe"
+# 18.210.7.191 - as above
+# 44.192.252.32 - as above
+# 44.193.198.48 - as above
 #
 # 40.122.49.223 - scraping with multiple IPs and faked user agent (Edg/88.0.705.63)
 # 40.84.146.243
@@ -91,6 +95,15 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 40.74.226.29
 #
 # 159.203.41.0 - perpetually scraping /tags.json
+# 2003:e4:bf01:9a00:219:99ff:fece:3ca2 - html scraping posts
+# 2.206.46.34 - nonstop order:random searches
+# 217.178.87.236 - html scraping posts
+# 34.105.0.178 - overly aggressive rss feed
+# 34.121.58.43 - overly aggressive rss feed
+# 34.123.13.89 - nonstop cat_ears searches
+# 35.188.183.203 - nonstop cat_ears searches
+#
+# 2403:ac80:cc:7::f8:a374 - scraping the first 1000 pages of `*girl*` once per hour every hour.
 resource "cloudflare_filter" "banned_ips" {
   zone_id    = cloudflare_zone.donmai_us.id
   expression = <<-EOS
@@ -159,6 +172,18 @@ resource "cloudflare_filter" "banned_ips" {
       199.7.166.17
       40.74.226.29
       159.203.41.0
+      2003:e4:bf01:9a00:219:99ff:fece:3ca2
+      2.206.46.34
+      18.210.7.191
+      217.178.87.236
+      34.105.0.178
+      34.121.58.43
+      34.123.13.89
+      35.188.183.203
+      3.85.50.88
+      44.192.252.32
+      44.193.198.48
+      2403:ac80:cc:7::f8:a374
     }
   EOS
 }
