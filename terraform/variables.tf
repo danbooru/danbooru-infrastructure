@@ -88,3 +88,7 @@ variable "scaleway_dedibox_api_token" {}
 variable "server_ids" {
   type = map(any)
 }
+
+variable "server_ipv4s" {
+  type = map(any)
+}

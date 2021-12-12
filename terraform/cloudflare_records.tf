@@ -146,11 +146,35 @@ resource "cloudflare_record" "ssh_kinako_donmai_us" {
   proxied = false
 }
 
-resource "cloudflare_record" "ssh_haachama_donmai_us" {
+resource "cloudflare_record" "haachama_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
-  name    = "ssh.haachama"
+  name    = "haachama"
   value   = local.servers.haachama.ipv4
+  proxied = false
+}
+
+resource "cloudflare_record" "node1_haachama_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "node1.haachama"
+  value   = local.servers.node1_haachama.ipv4
+  proxied = false
+}
+
+resource "cloudflare_record" "node2_haachama_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "node2.haachama"
+  value   = local.servers.node2_haachama.ipv4
+  proxied = false
+}
+
+resource "cloudflare_record" "node3_haachama_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "node3.haachama"
+  value   = local.servers.node3_haachama.ipv4
   proxied = false
 }
 
