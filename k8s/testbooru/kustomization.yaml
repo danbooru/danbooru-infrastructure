@@ -2,4 +2,63 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+- ../kubernetes-dashboard
+- ../cert-manager
+- ../ingress-nginx
+- ../redis
+- ../postgres
+- ../iqdb
+- ../fumimi
 - ../danbooru
+- ../danbooru-images
+#- ../recommender
+- ingress.yaml
+
+configMapGenerator:
+- name: danbooru-config-env
+  namespace: danbooru
+  env: config/danbooru.env
+
+secretGenerator:
+- name: danbooru-local-config
+  namespace: danbooru
+  files:
+  - secrets/danbooru_local_config.rb
+
+- name: danbooru-secret-env
+  namespace: danbooru
+  env: secrets/danbooru.env
+
+- name: fumimi-secret-env
+  namespace: danbooru
+  env: secrets/fumimi.env
+
+patches:
+- path: patches/redis.yaml
+  target:
+    name: redis
+    kind: StatefulSet
+- path: patches/postgres.yaml
+  target:
+    name: postgres
+    kind: StatefulSet
+- path: patches/iqdb.yaml
+  target:
+    name: iqdb
+    kind: Deployment
+- path: patches/recommender.yaml
+  target:
+    name: recommender
+    kind: Deployment
+- path: patches/danbooru.yaml
+  target:
+    name: danbooru
+    kind: Deployment
+- path: patches/danbooru-jobs.yaml
+  target:
+    name: danbooru-jobs
+    kind: Deployment
+- path: patches/danbooru-images.yaml
+  target:
+    name: danbooru-images
+    kind: Deployment

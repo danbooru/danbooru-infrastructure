@@ -2,6 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 configMapGenerator:
+# The danbooru.donmai.us .env config
+- name: danbooru-config-env
+  namespace: danbooru
+  env: config/danbooru.env
+
 # The Prometheus config
 - name: prometheus-config
   namespace: mgmt
@@ -44,8 +49,14 @@ resources:
 - ../cert-manager
 - ../kubernetes-dashboard
 - ../ingress-nginx
+- ../redis
+- ../iqdb
+- ../fumimi
+- ../recommender
+- ../postgres
 - ../danbooru-images
 - ../danbooru
+- ../betabooru
 - namespaces.yaml
 - service-accounts.yaml
 - pgadmin.yaml

@@ -1,0 +1,19 @@
+kind: Deployment
+metadata:
+  name: danbooru-images
+spec:
+  template:
+    spec:
+      nodeName: node1
+
+      containers:
+      - name: nginx
+        readinessProbe:
+          httpGet:
+            httpHeaders:
+            - name: Host
+              value: testbooru-cdn.donmai.us
+      volumes:
+      - name: danbooru-images
+        hostPath:
+          path: /srv/images

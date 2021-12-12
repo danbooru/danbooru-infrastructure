@@ -226,11 +226,29 @@ resource "cloudflare_record" "safebooru_donmai_us" {
 }
 
 resource "cloudflare_record" "testbooru_donmai_us" {
+  count = 3
   zone_id = cloudflare_zone.donmai_us.id
-  type    = "CNAME"
+  type    = "A"
   name    = "testbooru"
-  value   = "oogaki.donmai.us"
   proxied = true
+  value = [
+    local.servers.node1_haachama.ipv4,
+    local.servers.node2_haachama.ipv4,
+    local.servers.node3_haachama.ipv4,
+  ][count.index]
+}
+
+resource "cloudflare_record" "testbooru_cdn_donmai_us" {
+  count = 3
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "testbooru-cdn"
+  proxied = true
+  value = [
+    local.servers.node1_haachama.ipv4,
+    local.servers.node2_haachama.ipv4,
+    local.servers.node3_haachama.ipv4,
+  ][count.index]
 }
 
 resource "cloudflare_record" "b2_donmai_us" {

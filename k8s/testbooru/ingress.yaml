@@ -1,0 +1,47 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: danbooru
+  namespace: danbooru
+spec:
+  rules:
+    - host: testbooru.donmai.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danbooru
+                port:
+                  number: 80
+  tls:
+    - hosts:
+      - testbooru.donmai.us
+      secretName: donmai-us-tls
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: danbooru-images
+  namespace: danbooru
+
+spec:
+  rules:
+    - host: testbooru-cdn.donmai.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danbooru-images
+                port:
+                  number: 80
+
+  tls:
+    - hosts:
+      - testbooru-cdn.donmai.us
+      secretName: donmai-us-tls

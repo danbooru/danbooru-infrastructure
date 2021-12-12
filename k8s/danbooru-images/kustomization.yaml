@@ -10,4 +10,3 @@ configMapGenerator:
 
 resources:
 - danbooru-images.yaml
-- ingress.yaml

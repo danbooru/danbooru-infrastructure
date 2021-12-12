@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: danbooru-jobs
+spec:
+  replicas: 2
+
+  template:
+    spec:
+      nodeName: node1
+
+      containers:
+      - name: danbooru
+        volumeMounts:
+        - mountPath: /srv
+          name: danbooru-images
+          mountPropagation: HostToContainer
+
+      volumes:
+      - name: danbooru-images
+        hostPath:
+          path: /srv/images

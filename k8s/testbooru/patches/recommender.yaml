@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommender
+spec:
+  template:
+    spec:
+      nodeName: node1
+
+      volumes:
+      - name: recommender-data
+        hostPath:
+          path: /srv/recommender

@@ -6,6 +6,7 @@ resources:
 - ../cert-manager
 - ../ingress-nginx
 - ../danbooru-images
+- ingress.yaml
 
 patches:
 - path: patches/danbooru-images.yaml
