@@ -58,6 +58,10 @@ patches:
   target:
     name: danbooru-jobs
     kind: Deployment
+- path: patches/danbooru-cron.yaml
+  target:
+    name: danbooru-cron
+    kind: Deployment
 - path: patches/danbooru-images.yaml
   target:
     name: danbooru-images

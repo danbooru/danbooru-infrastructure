@@ -11,6 +11,7 @@ spec:
 
       containers:
       - name: danbooru
+        image: ghcr.io/danbooru/danbooru:latest
         volumeMounts:
         - mountPath: /srv
           name: danbooru-images

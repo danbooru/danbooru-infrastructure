@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: danbooru-cron
+spec:
+  template:
+    spec:
+      containers:
+      - name: danbooru
+        image: ghcr.io/danbooru/danbooru:latest
