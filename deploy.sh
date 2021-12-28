@@ -6,10 +6,11 @@ set -euxo pipefail
 #git push
 
 deploy() {
-  kubectl rollout restart deploy/"$@"
-  kubectl rollout status deploy/"$@"
+  kubectl rollout restart --context $CONTEXT deploy/"$@"
+  kubectl rollout status --context $CONTEXT deploy/"$@"
 }
 
+CONTEXT=${1:-danbooru-production}
 deploy downbooru
 deploy danbooru-cron
 deploy danbooru-jobs
