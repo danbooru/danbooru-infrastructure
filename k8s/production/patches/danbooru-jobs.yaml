@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: danbooru-jobs
 spec:
-  replicas: 12
+  replicas: 6
 
   template:
     spec:
