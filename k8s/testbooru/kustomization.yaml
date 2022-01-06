@@ -66,3 +66,7 @@ patches:
   target:
     name: danbooru-images
     kind: Deployment
+- path: patches/downbooru.yaml
+  target:
+    name: downbooru
+    kind: Deployment

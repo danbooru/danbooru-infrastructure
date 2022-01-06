@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: downbooru
+spec:
+  template:
+    spec:
+      containers:
+      - name: openresty
+        image: ghcr.io/danbooru/danbooru:latest
