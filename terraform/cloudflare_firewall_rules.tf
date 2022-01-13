@@ -25,6 +25,21 @@ resource "cloudflare_firewall_rule" "banned_ips" {
   priority    = 500
 }
 
+resource "cloudflare_firewall_rule" "security_level" {
+  zone_id     = cloudflare_zone.donmai_us.id
+  filter_id   = cloudflare_filter.security_level.id
+  description = "Security Level (danbooru.donmai.us)"
+  action      = "managed_challenge"
+  priority    = 550
+}
+
+resource "cloudflare_filter" "security_level" {
+  zone_id    = cloudflare_zone.donmai_us.id
+  expression = <<-EOS
+    (cf.threat_score gt 24 and http.host eq "danbooru.donmai.us")
+  EOS
+}
+
 # 1.117.171.171 - spamming full_body / solo searches
 # 116.177.27.12 - same guy as above
 # 2.200.68.92 - spamming "rating:explicit <tag>" searches for non-existent tags
@@ -104,6 +119,18 @@ resource "cloudflare_firewall_rule" "banned_ips" {
 # 35.188.183.203 - nonstop cat_ears searches
 #
 # 2403:ac80:cc:7::f8:a374 - scraping the first 1000 pages of `*girl*` once per hour every hour.
+#
+# 54.144.77.1 - order:random bot - 1girl beach bikini rating:safe order:random limit=1
+# 3.238.18.84 - as above
+#
+# 178.171.90.0/24 - scraping "id:4000000..4999999 score:46" with hundreds of IPs
+# 178.171.91.0/24
+# 194.15.52.0/24
+# 194.15.53.0/24
+# 78.138.25.0/24
+# 91.241.164.0/24
+#
+# 45.93.8.0/24 - excessive random:200 searches
 resource "cloudflare_filter" "banned_ips" {
   zone_id    = cloudflare_zone.donmai_us.id
   expression = <<-EOS
@@ -184,6 +211,19 @@ resource "cloudflare_filter" "banned_ips" {
       44.192.252.32
       44.193.198.48
       2403:ac80:cc:7::f8:a374
+      54.144.77.1
+      3.238.18.84
+      181.23.93.120
+      178.171.90.0/24
+      178.171.91.0/24
+      194.15.52.0/24
+      194.15.53.0/24
+      78.138.25.0/24
+      91.241.164.0/24
+      45.93.8.0/24
+      2a02:2788:1094:30c:f955:7282:83f4:6db7
+      213.142.96.0/24
+      213.142.97.0/24
     }
   EOS
 }
@@ -192,7 +232,7 @@ resource "cloudflare_firewall_rule" "suspect_logins" {
   zone_id     = cloudflare_zone.donmai_us.id
   filter_id   = cloudflare_filter.suspect_logins.id
   description = "Logins (blank referers and threats)"
-  action      = "js_challenge"
+  action      = "managed_challenge"
   priority    = 750
 }
 
@@ -200,7 +240,7 @@ resource "cloudflare_firewall_rule" "dmail_spam" {
   zone_id     = cloudflare_zone.donmai_us.id
   filter_id   = cloudflare_filter.dmail_spam.id
   description = "DMail spam (/dmails/new)"
-  action      = "challenge"
+  action      = "managed_challenge"
   priority    = 760
 }
 

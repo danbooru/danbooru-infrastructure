@@ -1,5 +1,5 @@
 terraform {
-  required_version = "1.0.7"
+  required_version = "1.1.3"
 
   required_providers {
     aws = {
@@ -9,17 +9,17 @@ terraform {
 
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "~> 2.0"
+      version = "~> 3.7"
     }
 
     linode = {
       source  = "linode/linode"
-      version = "1.16.0"
+      version = "~> 1.25"
     }
 
     ovh = {
       source  = "ovh/ovh"
-      version = "0.11.0"
+      version = "~> 0.16"
     }
   }
 }

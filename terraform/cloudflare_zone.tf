@@ -122,7 +122,7 @@ resource "cloudflare_zone_settings_override" "donmai_us" {
 
     # https://support.cloudflare.com/hc/en-us/articles/200170056-Understanding-the-Cloudflare-Security-Level
     # Low: Challenges only the most threatening visitors
-    security_level = "low"
+    security_level = "essentially_off"
 
     # https://support.cloudflare.com/hc/en-us/articles/200172016-Understanding-the-Cloudflare-Web-Application-Firewall-WAF-
     waf = "on"
