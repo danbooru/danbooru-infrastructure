@@ -57,6 +57,7 @@ resources:
 - ../danbooru-images
 - ../danbooru
 - ../betabooru
+- ../deepdanbooru
 - namespaces.yaml
 - service-accounts.yaml
 - pgadmin.yaml

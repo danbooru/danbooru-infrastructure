@@ -11,6 +11,7 @@ resources:
 - ../fumimi
 - ../danbooru
 - ../danbooru-images
+- ../deepdanbooru
 #- ../recommender
 - ingress.yaml
 

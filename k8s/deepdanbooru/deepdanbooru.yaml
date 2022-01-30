@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepdanbooru
+  namespace: danbooru
+  labels:
+    app: deepdanbooru
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deepdanbooru
+  template:
+    metadata:
+      labels:
+        app: deepdanbooru
+    spec:
+      hostname: deepdanbooru
+      containers:
+      - name: deepdanbooru
+        image: ghcr.io/fredgido/tfmes:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+
+        envFrom:
+        - configMapRef:
+            name: deepdanbooru-config-env
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepdanbooru
+  namespace: danbooru
+spec:
+  selector:
+    app: deepdanbooru
+  ports:
+    - port: 80
+      targetPort: 8000

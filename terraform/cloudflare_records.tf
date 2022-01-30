@@ -43,6 +43,19 @@ resource "cloudflare_record" "betabooru_donmai_us" {
   proxied = true
 }
 
+resource "cloudflare_record" "deepdanbooru_donmai_us" {
+  count = 3
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "A"
+  name    = "deepdanbooru"
+  value = [
+    local.servers.gura.ipv4,
+    local.servers.ame.ipv4,
+    local.servers.ina.ipv4,
+  ][count.index]
+  proxied = true
+}
+
 resource "cloudflare_record" "mail_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
