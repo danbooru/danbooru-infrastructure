@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: danbooru
 spec:
+  replicas: 3
+
   template:
     spec:
       nodeName: node1
