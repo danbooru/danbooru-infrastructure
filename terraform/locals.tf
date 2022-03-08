@@ -40,11 +40,6 @@ locals {
       ipv4 = tolist(linode_instance.oumae_donmai_us.ipv4)[0]
     }
 
-    yukinoshita = {
-      id   = var.server_ids.yukinoshita
-      ipv4 = tolist(linode_instance.yukinoshita_donmai_us.ipv4)[0]
-    }
-
     naoko = {
       id   = var.server_ids.naoko
       ipv4 = data.external.naoko_donmai_us.result.ip

@@ -135,14 +135,6 @@ resource "cloudflare_record" "irys_donmai_us" {
   proxied = false
 }
 
-resource "cloudflare_record" "yukinoshita_donmai_us" {
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "A"
-  name    = "yukinoshita"
-  value   = local.servers.yukinoshita.ipv4
-  proxied = false
-}
-
 resource "cloudflare_record" "ssh_isshiki_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
