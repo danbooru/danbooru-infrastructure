@@ -1,5 +1,25 @@
 # vim: sw=2
 
+- name: Update files in /etc/sysctl.d/
+  hosts: k8s
+  become: yes
+  tags:
+  - k8s
+  tasks:
+  - ansible.builtin.template:
+      src: '{{ item.src }}'
+      dest: '/etc/sysctl.d/{{ item.path | regex_replace("\.j2$", "") }}'
+      owner: root
+      group: root
+      mode: '{{ item.mode }}'
+    with_filetree: templates/etc/sysctl.d/
+    when: item.state == 'file'
+    notify:
+    - Reload sysctl
+  handlers:
+  - name: Reload sysctl
+    command: sysctl --system
+
 - name: Update archives config
   hosts: archives
   become: yes
