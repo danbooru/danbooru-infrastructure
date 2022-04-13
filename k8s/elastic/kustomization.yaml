@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- namespace.yaml
+- crds.yaml
+#- operator.yaml
+- elasticsearch.yaml
+- kibana.yaml
+- fleet-server.yaml
+- elastic-agent.yaml
+- service-account.yaml

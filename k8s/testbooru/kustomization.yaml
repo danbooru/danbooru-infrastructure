@@ -12,6 +12,7 @@ resources:
 - ../danbooru
 - ../danbooru-images
 - ../deepdanbooru
+- ../elastic
 #- ../recommender
 - ingress.yaml
 
