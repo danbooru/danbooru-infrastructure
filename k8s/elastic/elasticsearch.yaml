@@ -8,8 +8,15 @@ spec:
   nodeSets:
   - name: default
     count: 1
-    podTemplate:
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+        namespace: elastic-apm
       spec:
-        volumes:
-        - name: elasticsearch-data
-          emptyDir: {}
+        volumeName: elasticsearch-data-pv
+        storageClassName: local-storage
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1G
