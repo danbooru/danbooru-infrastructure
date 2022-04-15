@@ -23,7 +23,7 @@ spec:
     - name: kubernetes
       version: latest
     xpack.fleet.agentPolicies:
-    - name: Fleet Server on ECK policy
+    - name: Fleet Server
       id: eck-fleet-server
       is_default_fleet_server: true
       namespace: default
@@ -35,8 +35,8 @@ spec:
         id: fleet_server-1
         package:
           name: fleet_server
-    - name: Elastic Agent on ECK policy
-      id: eck-agent
+    - name: APM Server Policy
+      id: eck-apm-server
       namespace: default
       monitoring_enabled:
       - logs
@@ -44,10 +44,6 @@ spec:
       unenroll_timeout: 900
       is_default: true
       package_policies:
-      - name: system-1
-        id: system-1
-        package:
-          name: system
       - name: apm-1
         id: apm-1
         package:

@@ -1,0 +1,32 @@
+apiVersion: agent.k8s.elastic.co/v1alpha1
+kind: Agent
+metadata:
+  name: apm-server
+  namespace: elastic-apm
+spec:
+  version: 8.1.2
+  kibanaRef:
+    name: kibana
+  fleetServerRef:
+    name: fleet-server
+  mode: fleet
+  deployment:
+    replicas: 1
+    podTemplate:
+      spec:
+        serviceAccountName: elastic-agent
+        automountServiceAccountToken: true
+        securityContext:
+          runAsUser: 0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apm
+  namespace: elastic-apm
+spec:
+  selector:
+    agent.k8s.elastic.co/name: apm-server
+  ports:
+  - protocol: TCP
+    port: 8200

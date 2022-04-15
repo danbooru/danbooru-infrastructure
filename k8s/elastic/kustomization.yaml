@@ -10,3 +10,4 @@ resources:
 - fleet-server.yaml
 - elastic-agent.yaml
 - service-account.yaml
+- apm-server.yaml
