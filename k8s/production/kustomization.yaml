@@ -58,12 +58,15 @@ resources:
 - ../danbooru
 - ../betabooru
 - ../deepdanbooru
+- ../elastic
 - namespaces.yaml
 - service-accounts.yaml
 - pgadmin.yaml
 - prometheus.yaml
 - prometheus-node-exporter.yaml
 - ingresses.yaml
+- local-storage.yaml
+- elasticsearch-data.yaml
 
 patches:
 - path: patches/danbooru.yaml
@@ -106,3 +109,7 @@ patches:
   target:
     name: postgres
     kind: StatefulSet
+- path: patches/apm-server.yaml
+  target:
+    name: apm-server
+    kind: Agent

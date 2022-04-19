@@ -1,0 +1,8 @@
+apiVersion: agent.k8s.elastic.co/v1alpha1
+kind: Agent
+metadata:
+  name: apm-server
+  namespace: elastic-apm
+spec:
+  deployment:
+    replicas: 9

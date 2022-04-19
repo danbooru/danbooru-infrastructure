@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: elasticsearch-data-pv
+  namespace: elastic-apm
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 800G
+  accessModes:
+  - ReadWriteOnce
+  local:
+    path: /host/srv/elasticsearch-data
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values: [mori]
