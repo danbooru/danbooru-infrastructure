@@ -9,17 +9,10 @@ configMapGenerator:
 - name: danbooru-nginx-config
   namespace: danbooru
   files:
-  - config/danbooru/nginx.conf
-
-# The Downbooru nginx config for maintenance mode
-- name: downbooru-nginx-config
-  namespace: danbooru
-  files:
-  - config/downbooru/nginx.conf
+  - config/nginx.conf
 
 resources:
 - namespaces.yaml
 - danbooru.yaml
 - danbooru-cron.yaml
 - danbooru-jobs.yaml
-- downbooru.yaml

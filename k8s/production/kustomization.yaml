@@ -56,6 +56,7 @@ resources:
 - ../postgres
 - ../danbooru-images
 - ../danbooru
+- ../downbooru
 - ../betabooru
 - ../deepdanbooru
 - ../elastic
