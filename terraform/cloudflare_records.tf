@@ -267,6 +267,14 @@ resource "cloudflare_record" "www_donmai_us" {
   proxied = true
 }
 
+resource "cloudflare_record" "www_danbooru_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "CNAME"
+  name    = "www.danbooru"
+  value   = "danbooru.donmai.us"
+  proxied = true
+}
+
 resource "cloudflare_record" "sonohara_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "CNAME"
