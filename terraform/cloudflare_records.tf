@@ -439,8 +439,15 @@ resource "cloudflare_record" "google_domain_verification_danbooru_donmai_us" {
 resource "cloudflare_record" "facebook_domain_verification_danbooru_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "TXT"
+  name    = "danbooru"
+  value   = "facebook-domain-verification=dd7v7l0a4k4x01mzzmjf4duj2eif04"
+}
+
+resource "cloudflare_record" "facebook_domain_verification_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "TXT"
   name    = "donmai.us"
-  value   = "facebook-domain-verification=gck3lrvxm06ovoody2eomfx4m1orgz"
+  value   = "facebook-domain-verification=7akblgtmzroi48r5lyrqddvzojtooz"
 }
 
 # Verify domain ownership for Yandex search console.
