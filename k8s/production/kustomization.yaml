@@ -114,3 +114,7 @@ patches:
   target:
     name: apm-server
     kind: Agent
+- path: patches/kibana.yaml
+  target:
+    name: kibana
+    kind: Kibana

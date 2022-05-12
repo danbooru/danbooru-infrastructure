@@ -54,3 +54,7 @@ spec:
           vars:
           - name: host
             value: 0.0.0.0:8200
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
