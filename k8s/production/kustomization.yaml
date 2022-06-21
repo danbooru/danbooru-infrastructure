@@ -59,6 +59,7 @@ resources:
 - ../downbooru
 - ../betabooru
 - ../deepdanbooru
+- ../autotagger
 - ../elastic
 - namespaces.yaml
 - service-accounts.yaml

@@ -49,6 +49,30 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  name: autotagger
+  namespace: danbooru
+spec:
+  rules:
+    - host: autotagger.donmai.us
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: autotagger
+                port:
+                  number: 80
+  tls:
+    - hosts:
+      - autotagger.donmai.us
+      secretName: donmai-us-tls
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
   name: danbooru
   namespace: danbooru
   annotations:

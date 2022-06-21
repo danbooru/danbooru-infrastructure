@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autotagger
+  namespace: danbooru
+  labels:
+    app: autotagger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autotagger
+  template:
+    metadata:
+      labels:
+        app: autotagger
+    spec:
+      containers:
+      - name: autotagger
+        image: ghcr.io/danbooru/autotagger:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+
+        envFrom:
+        - configMapRef:
+            name: autotagger-config-env
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: autotagger
+  namespace: danbooru
+spec:
+  selector:
+    app: autotagger
+  ports:
+    - port: 80
+      targetPort: 5000
