@@ -6,7 +6,7 @@ metadata:
   labels:
     app: autotagger
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: autotagger
@@ -19,12 +19,39 @@ spec:
       - name: autotagger
         image: ghcr.io/danbooru/autotagger:latest
         imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "1Gi"
         ports:
         - containerPort: 5000
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 6
+
+        startupProbe:
+          httpGet:
+            path: /
+            port: 5000
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 36 # 36 * 5 seconds = 3 minutes
 
         envFrom:
         - configMapRef:
             name: autotagger-config-env
+
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: autotagger
 
 ---
 
