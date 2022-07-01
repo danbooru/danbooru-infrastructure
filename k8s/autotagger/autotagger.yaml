@@ -30,7 +30,7 @@ spec:
             path: /
             port: 5000
           periodSeconds: 5
-          timeoutSeconds: 3
+          timeoutSeconds: 10
           failureThreshold: 6
 
         startupProbe:
