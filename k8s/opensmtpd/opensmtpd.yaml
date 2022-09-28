@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: opensmtpd
+  namespace: danbooru
+  labels:
+    app: opensmtpd
+
+spec:
+  replicas: 1
+  serviceName: opensmtpd
+  selector:
+    matchLabels:
+      app: opensmtpd
+
+  updateStrategy:
+    type: OnDelete
+
+  template:
+    metadata:
+      labels:
+        app: opensmtpd
+
+    spec:
+      terminationGracePeriodSeconds: 90
+
+      containers:
+      - name: opensmtpd
+        image: ghcr.io/danbooru/opensmtpd:latest
+        imagePullPolicy: Always
+        args: ["smtpd", "-d", "-f", "/etc/opensmtpd/smtpd.conf"]
+
+        ports:
+        - containerPort: 587
+        - containerPort: 25
+
+        volumeMounts:
+        - name: opensmtpd-config
+          mountPath: /etc/opensmtpd
+          readOnly: true
+        - name: opensmtpd-data
+          mountPath: /var/lib/opensmtpd
+          mountPropagation: HostToContainer
+
+        readinessProbe:
+          exec:
+            command: ["smtpctl", "show", "status"]
+          periodSeconds: 15
+          timeoutSeconds: 3
+          failureThreshold: 2
+          initialDelaySeconds: 3
+
+      volumes:
+      - name: opensmtpd-config
+        configMap:
+          name: opensmtpd-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: opensmtpd
+  namespace: danbooru
+  labels:
+    app: opensmtpd
+spec:
+  selector:
+    app: opensmtpd
+  ports:
+    - port: 25
+      targetPort: 25
+    - port: 587
+      targetPort: 587

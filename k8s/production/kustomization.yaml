@@ -13,6 +13,12 @@ configMapGenerator:
   files:
   - config/prometheus/prometheus.yml
 
+# The OpenSMTPD config
+- name: opensmtpd-config
+  namespace: danbooru
+  files:
+  - config/opensmtpd/smtpd.conf
+
 secretGenerator:
 # The danbooru_local_config.rb for danbooru.donmai.us
 - name: danbooru-local-config
@@ -61,6 +67,7 @@ resources:
 - ../deepdanbooru
 - ../autotagger
 - ../elastic
+- ../opensmtpd
 - namespaces.yaml
 - service-accounts.yaml
 - pgadmin.yaml
@@ -110,6 +117,10 @@ patches:
 - path: patches/postgres.yaml
   target:
     name: postgres
+    kind: StatefulSet
+- path: patches/opensmtpd.yaml
+  target:
+    name: opensmtpd
     kind: StatefulSet
 - path: patches/apm-server.yaml
   target:

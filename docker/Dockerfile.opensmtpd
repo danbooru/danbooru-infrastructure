@@ -1,0 +1,10 @@
+FROM ubuntu:22.04
+
+RUN \
+  apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends opensmtpd busybox && \
+  busybox --install -s
+
+WORKDIR /var/lib/opensmtpd
+
+CMD ["smtpd", "-d"]
