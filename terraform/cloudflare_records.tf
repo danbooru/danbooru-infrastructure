@@ -441,6 +441,31 @@ resource "cloudflare_record" "aws_ses_verification_donmai_us" {
   value   = aws_ses_domain_identity.danbooru_donmai_us.verification_token
 }
 
+# SMTP2GO domain verification
+# https://support.smtp2go.com/hc/en-gb/articles/115004408567-Verified-Senders
+resource "cloudflare_record" "em1050050_danbooru_donmai_us" {
+  count   = 1
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "CNAME"
+  name    = "em1050050.danbooru"
+  value   = "return.smtp2go.net"
+}
+
+resource "cloudflare_record" "s1050050_danbooru_donmai_us" {
+  count   = 1
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "CNAME"
+  name    = "s1050050._domainkey.danbooru"
+  value   = "dkim.smtp2go.net"
+}
+
+resource "cloudflare_record" "link_danbooru_donmai_us" {
+  count   = 1
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "CNAME"
+  name    = "link.danbooru"
+  value   = "track.smtp2go.net"
+}
 
 # Verify domain ownership with Github to get a verified badge on https://github.com/danbooru.
 # https://docs.github.com/en/github/setting-up-and-managing-organizations-and-teams/verifying-your-organizations-domain
