@@ -25,11 +25,6 @@ resource "cloudflare_healthcheck" "danbooru_donmai_us" {
   retries = 2
   consecutive_fails = 2
   consecutive_successes = 2
-
-  notification_suspended = false
-  notification_email_addresses = [
-    "noizave@gmail.com"
-  ]
 }
 
 resource "cloudflare_healthcheck" "cdn_donmai_us" {
@@ -64,9 +59,4 @@ resource "cloudflare_healthcheck" "cdn_donmai_us" {
   retries = 2
   consecutive_fails = 2
   consecutive_successes = 2
-
-  notification_suspended = false
-  notification_email_addresses = [
-    "noizave@gmail.com"
-  ]
 }

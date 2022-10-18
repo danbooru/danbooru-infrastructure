@@ -18,6 +18,8 @@ variable "aws_secret_key" {}
 # Cloudflare
 #
 
+variable "cloudflare_account_id" {}
+
 # https://dash.cloudflare.com/profile/api-tokens
 #
 # Required permissions:

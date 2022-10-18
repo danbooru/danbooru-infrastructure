@@ -1,6 +1,7 @@
 # https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/zone
 # cf-terraforming -z $CLOUDFLARE_ZONE_ID -e $CLOUDFLARE_EMAIL -k $CLOUDFLARE_KEY zone
 resource "cloudflare_zone" "donmai_us" {
+  account_id = var.cloudflare_account_id
   zone   = "donmai.us"
   paused = false
   plan   = "pro"
