@@ -145,10 +145,6 @@ resource "cloudflare_zone_settings_override" "donmai_us" {
     # https://developers.cloudflare.com/http3/
     http3 = "on"
 
-    # https://support.cloudflare.com/hc/en-us/articles/200168236-Configuring-Cloudflare-IP-Geolocation
-    # Add CF-IPCountry header to requests
-    ip_geolocation = "on"
-
     # https://support.cloudflare.com/hc/en-us/articles/200172516#h_51422705-42d0-450d-8eb1-5321dcadb5bc
     # 100mb max upload size (100mb is the max on the Pro plan).
     max_upload = 100 # megabytes
