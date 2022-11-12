@@ -51,6 +51,12 @@ secretGenerator:
   namespace: mgmt
   env: secrets/pgadmin.env
 
+- name: squid-config
+  namespace: danbooru
+  files:
+  - secrets/squid/passwd
+  - secrets/squid/squid.conf
+
 resources:
 - ../cert-manager
 - ../kubernetes-dashboard
@@ -68,6 +74,7 @@ resources:
 - ../autotagger
 - ../elastic
 - ../opensmtpd
+- ../squid
 - namespaces.yaml
 - service-accounts.yaml
 - pgadmin.yaml

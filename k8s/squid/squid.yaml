@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: squid
+  namespace: danbooru
+  labels:
+    app: squid
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: squid
+  template:
+    metadata:
+      labels:
+        app: squid
+    spec:
+      securityContext:
+        runAsUser: proxy
+      containers:
+      - name: squid
+        image: ubuntu/squid:5.6-22.10_beta
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3128
+
+        volumeMounts:
+        - name: squid-config
+          mountPath: "/etc/squid"
+          readOnly: true
+
+        livenessProbe:
+          tcpSocket:
+            port: 3128
+          initialDelaySeconds: 15
+          timeoutSeconds: 4
+
+        startupProbe:
+          tcpSocket:
+            port: 3128
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 6 # 6 * 5 seconds = 30 seconds
+
+      volumes:
+      - name: squid-config
+        secret:
+          secretName: squid-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: squid
+  namespace: danbooru
+spec:
+  selector:
+    app: squid
+  ports:
+    - port: 3128
+      targetPort: 3128
