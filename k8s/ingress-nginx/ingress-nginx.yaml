@@ -102,7 +102,7 @@ data:
   # http://nginx.org/en/docs/http/ngx_http_log_module.html#log_format
   # http://nginx.org/en/docs/varindex.html
   log-format-escape-json: "true"
-  log-format-upstream: '{"time":"$msec","id":"$request_id","ip":"$remote_addr","method":"$request_method","host":"$host","url":"$scheme://$host$request_uri","status":$status,"contentType":"$sent_http_content_type","userAgent":"$http_user_agent","referer":"$http_referer","upstream":"$upstream_addr","received":"$request_length","sent":"$bytes_sent","duration":"$request_time"}'
+  log-format-upstream: '{"time":"$msec","id":"$http_x_request_id","ip":"$remote_addr","method":"$request_method","host":"$host","url":"$scheme://$host$request_uri","status":$status,"contentType":"$sent_http_content_type","userAgent":"$http_user_agent","referer":"$http_referer","upstream":"$upstream_addr","received":"$request_length","sent":"$bytes_sent","duration":"$request_time"}'
 
   http-snippet: |
     # Log start time so NewRelic can report queue times.
