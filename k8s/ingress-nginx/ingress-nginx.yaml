@@ -107,7 +107,7 @@ data:
   http-snippet: |
     # Log start time so NewRelic can report queue times.
     # https://docs.newrelic.com/docs/apm/applications-menu/features/request-queue-server-configuration-examples
-    more_set_input_headers 'X-Request-Start: $msec';
+    more_set_input_headers 'X-Request-Start: $http_x_request_start, $msec';
 
     # Return the Cloudflare IP, the pod name of the ingress that handled the
     # request, and the node name and pod name of the upstream that served it.
