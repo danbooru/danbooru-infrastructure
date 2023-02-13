@@ -11,6 +11,7 @@ resources:
 - ../fumimi
 - ../danbooru
 - ../danbooru-images
+- ../squid
 - ../deepdanbooru
 - ../elastic
 #- ../recommender
@@ -36,6 +37,12 @@ secretGenerator:
 - name: fumimi-secret-env
   namespace: danbooru
   env: secrets/fumimi.env
+
+- name: squid-config
+  namespace: danbooru
+  files:
+  - secrets/squid/passwd
+  - secrets/squid/squid.conf
 
 patches:
 - path: patches/redis.yaml
