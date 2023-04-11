@@ -1,0 +1,48 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- namespace.yaml
+- zookeeper.yaml
+- clickhouse.yaml
+- query-service.yaml
+- frontend.yaml
+- alertmanager.yaml
+- otel-collector.yaml
+- otel-collector-metrics.yaml
+
+configMapGenerator:
+- name: clickhouse-config
+  namespace: signoz
+  files:
+  - config/clickhouse/config.xml
+  - config/clickhouse/users.xml
+  - config/clickhouse/custom-function.xml
+
+- name: zookeeper-env
+  namespace: signoz
+  env: config/zookeeper/zookeeper.env
+
+- name: query-service-config
+  namespace: signoz
+  files:
+  - config/query-service/prometheus.yml
+
+- name: query-service-env
+  namespace: signoz
+  env: config/query-service/query-service.env
+
+- name: frontend-config
+  namespace: signoz
+  files:
+  - config/frontend/default.conf
+
+- name: otel-collector-config
+  namespace: signoz
+  files:
+  - config/otel-collector/config.yaml
+
+- name: otel-collector-metrics-config
+  namespace: signoz
+  files:
+  - config/otel-collector-metrics/config.yaml

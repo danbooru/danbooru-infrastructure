@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: query-service
+  namespace: signoz
+spec:
+  template:
+    spec:
+      nodeName: mori
+
+      volumes:
+      - name: query-service-data
+        hostPath:
+          path: /srv/signoz/query-service
+      - name: query-service-dashboards
+        hostPath:
+          path: /srv/signoz/query-service-dashboards

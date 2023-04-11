@@ -1,0 +1,63 @@
+# Collects pull-based metrics.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+  redis:
+    endpoint: "redis-svc.danbooru.svc.cluster.local:6379"
+    collection_interval: 60s
+  prometheus:
+    config:
+      scrape_configs:
+        # otel-collector-metrics internal metrics
+        - job_name: otel-collector-metrics
+          scrape_interval: 60s
+          static_configs:
+            - targets:
+                - localhost:8888
+              labels:
+                job_name: otel-collector-metrics
+#        # SigNoz span metrics
+#        - job_name: signozspanmetrics-collector
+#          scrape_interval: 60s
+#          static_configs:
+#            - targets:
+#              - otel-collector.signoz.svc.cluster.local:8889
+
+processors:
+  batch:
+    send_batch_size: 10000
+    send_batch_max_size: 11000
+    timeout: 10s
+  memory_limiter:
+    limit_mib: 2048 # 2GB
+    spike_limit_mib: 512
+    check_interval: 1s
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  zpages:
+    endpoint: 0.0.0.0:55679
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+exporters:
+  clickhousemetricswrite:
+    endpoint: tcp://clickhouse.signoz.svc.cluster.local:9000/?database=signoz_metrics
+
+service:
+  telemetry:
+    metrics:
+      address: 0.0.0.0:8888
+  extensions:
+    - health_check
+    - zpages
+    - pprof
+  pipelines:
+    metrics:
+      receivers: [redis, prometheus]
+      processors: [memory_limiter, batch]
+      exporters: [clickhousemetricswrite]

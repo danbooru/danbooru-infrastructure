@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  namespace: signoz
+spec:
+  template:
+    spec:
+      nodeName: mori
+
+      volumes:
+      - name: zookeeper-data
+        hostPath:
+          path: /srv/signoz/zookeeper

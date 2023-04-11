@@ -57,6 +57,10 @@ secretGenerator:
   - secrets/squid/passwd
   - secrets/squid/squid.conf
 
+- name: otel-collector-metrics-secret-env
+  namespace: signoz
+  env: secrets/signoz/otel-collector-metrics.env
+
 resources:
 - ../cert-manager
 - ../kubernetes-dashboard
@@ -75,6 +79,7 @@ resources:
 - ../elastic
 - ../opensmtpd
 - ../squid
+- ../signoz
 - namespaces.yaml
 - service-accounts.yaml
 - pgadmin.yaml
@@ -137,3 +142,23 @@ patches:
   target:
     name: kibana
     kind: Kibana
+- path: patches/zookeeper-signoz.yaml
+  target:
+    name: zookeeper
+    namespace: signoz
+    kind: StatefulSet
+- path: patches/clickhouse-signoz.yaml
+  target:
+    name: clickhouse
+    namespace: signoz
+    kind: StatefulSet
+- path: patches/query-service-signoz.yaml
+  target:
+    name: query-service
+    namespace: signoz
+    kind: StatefulSet
+- path: patches/alertmanager-signoz.yaml
+  target:
+    name: alertmanager
+    namespace: signoz
+    kind: StatefulSet

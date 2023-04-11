@@ -1,0 +1,83 @@
+# Collects push-based metrics.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: signoz
+  labels:
+    app: otel-collector
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: otel-collector
+
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+
+    spec:
+      containers:
+      - name: otel-collector
+        image: signoz/signoz-otel-collector:0.66.7
+        imagePullPolicy: Always
+        args: ["--config=/etc/otel-collector/config.yaml"]
+
+        ports:
+        - containerPort: 1777
+        - containerPort: 4317
+        - containerPort: 4318
+        - containerPort: 8888
+        - containerPort: 8889
+        - containerPort: 13133
+        - containerPort: 55679
+
+        env:
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "host.name=signoz-host,os.type=linux"
+        - name: DOCKER_MULTI_NODE_CLUSTER
+          value: "false"
+        - name: LOW_CARDINAL_EXCEPTION_GROUPING
+          value: "true"
+
+        volumeMounts:
+        - name: otel-collector-config
+          mountPath: /etc/otel-collector
+          readOnly: true
+
+      volumes:
+      - name: otel-collector-config
+        configMap:
+          name: otel-collector-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: signoz
+  labels:
+    app: otel-collector
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: pprof
+      port: 1777
+    - name: otlp-grpc-receiver
+      port: 4317
+    - name: otlp-http-receiver
+      port: 4318
+    - name: internal-metrics
+      port: 8888
+    - name: signoz-spanmetrics
+      port: 8889
+    - name: healthcheck
+      port: 13133
+    - name: zpages
+      port: 55679

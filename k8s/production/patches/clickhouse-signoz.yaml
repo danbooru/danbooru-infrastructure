@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse
+  namespace: signoz
+spec:
+  template:
+    spec:
+      nodeName: mori
+
+      volumes:
+      - name: clickhouse-data
+        hostPath:
+          path: /srv/signoz/clickhouse

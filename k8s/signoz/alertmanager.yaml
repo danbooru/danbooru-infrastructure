@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: alertmanager
+  namespace: signoz
+  labels:
+    app: alertmanager
+
+spec:
+  replicas: 1
+  serviceName: alertmanager
+  selector:
+    matchLabels:
+      app: alertmanager
+
+  updateStrategy:
+    type: OnDelete
+
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+
+    spec:
+      containers:
+      - name: alertmanager
+        image: signoz/alertmanager:0.23.0-0.2
+        imagePullPolicy: Always
+        args: ["--queryService.url=http://query-service-0.query-service.signoz.svc.cluster.local:8080", "--storage.path=/data"]
+
+        ports:
+        - containerPort: 9093
+
+        volumeMounts:
+        - name: alertmanager-data
+          mountPath: /data
+
+      # volumes:
+      # - name: alertmanager-data
+      #   hostPath:
+      #     path: /srv/alertmanager-signoz
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: signoz
+  labels:
+    app: alertmanager
+spec:
+  selector:
+    app: alertmanager
+  ports:
+    - name: http
+      port: 9093

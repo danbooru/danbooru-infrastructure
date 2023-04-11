@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: query-service
+  namespace: signoz
+  labels:
+    app: query-service
+
+spec:
+  replicas: 1
+  serviceName: query-service
+  selector:
+    matchLabels:
+      app: query-service
+
+  updateStrategy:
+    type: OnDelete
+
+  template:
+    metadata:
+      labels:
+        app: query-service
+
+    spec:
+      terminationGracePeriodSeconds: 90
+
+      containers:
+      - name: query-service
+        image: signoz/query-service:0.18.1
+        imagePullPolicy: Always
+        args: ["-config=/root/config/prometheus.yml"]
+
+        ports:
+        - containerPort: 6060
+        - containerPort: 8080
+
+        envFrom:
+        - configMapRef:
+            name: query-service-env
+
+        volumeMounts:
+        - name: query-service-config
+          mountPath: /root/config
+          readOnly: true
+        - name: query-service-data
+          mountPath: /var/lib/signoz
+        - name: query-service-dashboards
+          mountPath: /root/config/dashboards
+
+        readinessProbe:
+          httpGet:
+            path: "/api/v1/health"
+            port: 8080
+          periodSeconds: 15
+          timeoutSeconds: 3
+          failureThreshold: 2
+          initialDelaySeconds: 3
+
+      volumes:
+      - name: query-service-config
+        configMap:
+          name: query-service-config
+      # - name: query-service-data
+      #   hostPath:
+      #     path: /srv/query-service-signoz
+      # - name: query-service-dashboards
+      #   hostPath:
+      #     path: /srv/query-service-dashboards
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: query-service
+  namespace: signoz
+  labels:
+    app: query-service
+spec:
+  selector:
+    app: query-service
+  ports:
+    - name: pprof
+      port: 6060
+    - name: http
+      port: 8080

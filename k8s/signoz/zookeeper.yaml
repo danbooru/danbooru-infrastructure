@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  namespace: signoz
+  labels:
+    app: zookeeper
+
+spec:
+  replicas: 1
+  serviceName: zookeeper
+  selector:
+    matchLabels:
+      app: zookeeper
+
+  updateStrategy:
+    type: OnDelete
+
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+
+    spec:
+      terminationGracePeriodSeconds: 90
+
+      containers:
+      - name: zookeeper
+        image: bitnami/zookeeper:3.7.0
+        imagePullPolicy: Always
+
+        securityContext:
+          runAsUser: 0
+
+        ports:
+        - containerPort: 2181
+        - containerPort: 2888
+        - containerPort: 3888
+
+        envFrom:
+        - configMapRef:
+            name: zookeeper-env
+
+        volumeMounts:
+        - name: zookeeper-data
+          mountPath: /bitnami/zookeeper
+          mountPropagation: HostToContainer
+
+      # volumes:
+      # - name: zookeeper-data
+      #   hostPath:
+      #     path: /srv/zookeeper-signoz
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+  namespace: signoz
+  labels:
+    app: zookeeper
+spec:
+  selector:
+    app: zookeeper
+  ports:
+    - name: zookeeper-client
+      port: 2181
+    - name: zookeeper-peer-1
+      port: 2888
+    - name: zookeeper-leader-election
+      port: 3888

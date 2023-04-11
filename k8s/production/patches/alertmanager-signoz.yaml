@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: alertmanager
+  namespace: signoz
+spec:
+  template:
+    spec:
+      nodeName: mori
+
+      volumes:
+      - name: alertmanager-data
+        hostPath:
+          path: /srv/signoz/alertmanager

@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse
+  namespace: signoz
+  labels:
+    app: clickhouse
+
+spec:
+  replicas: 1
+  serviceName: clickhouse
+  selector:
+    matchLabels:
+      app: clickhouse
+
+  updateStrategy:
+    type: OnDelete
+
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+
+    spec:
+      terminationGracePeriodSeconds: 90
+
+      containers:
+      - name: clickhouse
+        image: clickhouse/clickhouse-server:23.2.5.46
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8123
+        - containerPort: 9000
+        - containerPort: 9005
+
+        securityContext:
+          capabilities:
+            add: ["SYS_NICE", "IPC_LOCK"]
+
+        volumeMounts:
+        - name: clickhouse-data
+          mountPath: /var/lib/clickhouse
+          mountPropagation: HostToContainer
+        - name: clickhouse-config
+          mountPath: /etc/clickhouse-server
+          readOnly: true
+
+        readinessProbe:
+          httpGet:
+            path: "/ping"
+            port: 8123
+          periodSeconds: 15
+          timeoutSeconds: 3
+          failureThreshold: 2
+          initialDelaySeconds: 3
+
+      volumes:
+      - name: clickhouse-config
+        configMap:
+          name: clickhouse-config
+      # - name: clickhouse-data
+      #   hostPath:
+      #     path: /srv/clickhouse-signoz
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+  namespace: signoz
+  labels:
+    app: clickhouse
+spec:
+  selector:
+    app: clickhouse
+  ports:
+    - name: http
+      port: 8123
+    - name: clickhouse-native
+      port: 9000
+    - name: postgres
+      port: 9005

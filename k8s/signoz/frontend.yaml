@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: signoz
+  labels:
+    app: frontend
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: frontend
+
+  template:
+    metadata:
+      labels:
+        app: frontend
+
+    spec:
+      containers:
+      - name: frontend
+        image: signoz/frontend:0.18.1
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 3301
+
+        volumeMounts:
+        - name: frontend-config
+          mountPath: /etc/nginx/conf.d/
+          readOnly: true
+
+      volumes:
+      - name: frontend-config
+        configMap:
+          name: frontend-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: signoz
+  labels:
+    app: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 3301

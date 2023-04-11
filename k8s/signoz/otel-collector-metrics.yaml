@@ -1,0 +1,70 @@
+# Collects pull-based metrics.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector-metrics
+  namespace: signoz
+  labels:
+    app: otel-collector-metrics
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: otel-collector-metrics
+
+  template:
+    metadata:
+      labels:
+        app: otel-collector-metrics
+
+    spec:
+      containers:
+      - name: otel-collector-metrics
+        image: signoz/signoz-otel-collector:0.66.7
+        imagePullPolicy: Always
+        args: ["--config=/etc/otel-collector/config.yaml"]
+
+        ports:
+        - containerPort: 1777
+        - containerPort: 8888
+        - containerPort: 13133
+        - containerPort: 55679
+
+        envFrom:
+        - secretRef:
+            name: otel-collector-metrics-secret-env
+
+        volumeMounts:
+        - name: otel-collector-metrics-config
+          mountPath: /etc/otel-collector
+          readOnly: true
+
+      volumes:
+      - name: otel-collector-metrics-config
+        configMap:
+          name: otel-collector-metrics-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector-metrics
+  namespace: signoz
+  labels:
+    app: otel-collector-metrics
+spec:
+  selector:
+    app: otel-collector-metrics
+  ports:
+    - name: pprof
+      port: 1777
+    - name: internal-metrics
+      port: 8888
+    - name: healthcheck
+      port: 13133
+    - name: zpages
+      port: 55679
