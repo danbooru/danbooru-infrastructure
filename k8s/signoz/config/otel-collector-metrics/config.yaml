@@ -26,15 +26,42 @@ receivers:
 #            - targets:
 #              - otel-collector.signoz.svc.cluster.local:8889
 
+  prometheus/cloudflare:
+    config:
+      scrape_configs:
+      - job_name: cloudflare-metrics
+        scrape_interval: 60s
+        static_configs:
+        - targets:
+          - cloudflare-exporter.signoz.svc.cluster.local:8080
+          labels:
+            job_name: cloudflare-metrics
+        metric_relabel_configs:
+        - source_labels: [__name__]
+          regex: "^go_.*|^promhttp_.*|^process_.*"
+          action: drop
+
 processors:
   batch:
     send_batch_size: 10000
     send_batch_max_size: 11000
     timeout: 10s
+
   memory_limiter:
     limit_mib: 2048 # 2GB
     spike_limit_mib: 512
     check_interval: 1s
+
+  # Drop `country` label from certain metrics and reaggregate samples.
+  metricstransform/cloudflare:
+    transforms:
+    - include: cloudflare_zone_requests_status_country_host|cloudflare_zone_firewall_events_count
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: ["action", "host", "source", "zone", "status"] # drop country label
+        aggregation_type: sum
 
 extensions:
   health_check:
@@ -60,4 +87,8 @@ service:
     metrics:
       receivers: [redis, prometheus]
       processors: [memory_limiter, batch]
+      exporters: [clickhousemetricswrite]
+    metrics/cloudflare:
+      receivers: [prometheus/cloudflare]
+      processors: [memory_limiter, metricstransform/cloudflare, batch]
       exporters: [clickhousemetricswrite]

@@ -61,6 +61,10 @@ secretGenerator:
   namespace: signoz
   env: secrets/signoz/otel-collector-metrics.env
 
+- name: cloudflare-exporter-secret-env
+  namespace: signoz
+  env: secrets/signoz/cloudflare-exporter.env
+
 resources:
 - ../cert-manager
 - ../kubernetes-dashboard

@@ -1,0 +1,52 @@
+# Exports Cloudflare metrics in Prometheus format. Scraped by otel-collector-metrics.
+#
+# https://github.com/lablabs/cloudflare-exporter
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-exporter
+  namespace: signoz
+  labels:
+    app: cloudflare-exporter
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: cloudflare-exporter
+
+  template:
+    metadata:
+      labels:
+        app: cloudflare-exporter
+
+    spec:
+      containers:
+      - name: cloudflare-exporter
+        image: ghcr.io/lablabs/cloudflare_exporter:0.0.14
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8080
+
+        envFrom:
+        - secretRef:
+            name: cloudflare-exporter-secret-env
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudflare-exporter
+  namespace: signoz
+  labels:
+    app: cloudflare-exporter
+spec:
+  selector:
+    app: cloudflare-exporter
+  ports:
+    - name: http
+      port: 8080
