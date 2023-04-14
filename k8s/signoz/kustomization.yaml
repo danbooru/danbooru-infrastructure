@@ -11,6 +11,7 @@ resources:
 - otel-collector.yaml
 - otel-collector-metrics.yaml
 - cloudflare-exporter.yaml
+- prometheus-node-exporter.yaml
 
 configMapGenerator:
 - name: clickhouse-config

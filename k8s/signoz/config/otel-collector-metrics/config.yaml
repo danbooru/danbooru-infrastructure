@@ -8,7 +8,7 @@ receivers:
   redis:
     endpoint: "redis-svc.danbooru.svc.cluster.local:6379"
     collection_interval: 60s
-  prometheus:
+  prometheus/internal:
     config:
       scrape_configs:
         # otel-collector-metrics internal metrics
@@ -41,6 +41,37 @@ receivers:
           regex: "^go_.*|^promhttp_.*|^process_.*"
           action: drop
 
+  prometheus/node:
+    config:
+      scrape_configs:
+      - job_name: node-metrics
+        scrape_interval: 60s
+        static_configs:
+        - targets: ["172.16.0.7:9100"]
+          labels:
+            job_name: node-metrics
+            node: ame
+        - targets: ["172.16.0.8:9100"]
+          labels:
+            job_name: node-metrics
+            node: gura
+        - targets: ["172.16.0.9:9100"]
+          labels:
+            job_name: node-metrics
+            node: ina
+        - targets: ["172.16.0.10:9100"]
+          labels:
+            job_name: node-metrics
+            node: mori
+        - targets: ["172.16.0.11:9100"]
+          labels:
+            job_name: node-metrics
+            node: kiara
+        metric_relabel_configs:
+        - source_labels: [__name__]
+          regex: "^node_(cooling|cpu_guest|cpu_core_throttle|cpu_frequency_(max|min)|cpu_scaling_frequency_(max|min)|disk_info|exporter|filesystem_(device_error|free_bytes|readonly)|hwmon_(power|chip|sensor)|hwmon_temp_(min|max|crit|alarm)|netstat_(Icmp|Udp)|scrape|network_(up|carrier|address|device|dormant|flags|iface|info|mtu|name|net|protocol|speed)|sockstat_(FRAG|RAW|UDP)|zfs_(abd|arc_(arc|abd|access|anon|l2|hash|evict)|zil_zil_itx|vdev|fm|dnode|dmu|zpool_(state|dataset))).*"
+          action: drop
+
 processors:
   batch:
     send_batch_size: 10000
@@ -62,6 +93,41 @@ processors:
       - action: aggregate_labels
         label_set: ["action", "host", "source", "zone", "status"] # drop country label
         aggregation_type: sum
+
+  metricstransform/node:
+    transforms:
+    # drop `cpu` label; sum cpus by mode
+    - include: node_cpu_seconds_total
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: ["mode", "node"] # drop `cpu`
+        aggregation_type: sum
+
+    # drop `cpu` label; average frequencies
+    - include: node_cpu_scaling_frequency_hertz
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: ["node"] # drop `cpu`
+        aggregation_type: mean
+
+    # drop `sensor` label; max temperatures by chip
+    - include: node_hwmon_temp_celsius
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: ["chip", "node"] # drop `sensor`
+        aggregation_type: max
+
+#  transform/node:
+#    metric_statements:
+#    - context: metric
+#      statements:
+#      - drop() where IsMatch(metric.name, "^node_zfs_zpool_dataset") == true and IsMatch(attributes["dataset"], "zroot/data/var/") == true
 
 extensions:
   health_check:
@@ -85,10 +151,14 @@ service:
     - pprof
   pipelines:
     metrics:
-      receivers: [redis, prometheus]
+      receivers: [redis, prometheus/internal]
       processors: [memory_limiter, batch]
       exporters: [clickhousemetricswrite]
     metrics/cloudflare:
       receivers: [prometheus/cloudflare]
       processors: [memory_limiter, metricstransform/cloudflare, batch]
+      exporters: [clickhousemetricswrite]
+    metrics/node:
+      receivers: [prometheus/node]
+      processors: [memory_limiter, metricstransform/node, batch]
       exporters: [clickhousemetricswrite]

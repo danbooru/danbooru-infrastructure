@@ -88,7 +88,6 @@ resources:
 - service-accounts.yaml
 - pgadmin.yaml
 - prometheus.yaml
-- prometheus-node-exporter.yaml
 - ingresses.yaml
 - local-storage.yaml
 - elasticsearch-data.yaml
