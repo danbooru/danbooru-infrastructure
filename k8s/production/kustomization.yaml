@@ -65,6 +65,10 @@ secretGenerator:
   namespace: signoz
   env: secrets/signoz/cloudflare-exporter.env
 
+- name: postgres-exporter-secret-env
+  namespace: signoz
+  env: secrets/signoz/postgres-exporter.env
+
 resources:
 - ../cert-manager
 - ../kubernetes-dashboard

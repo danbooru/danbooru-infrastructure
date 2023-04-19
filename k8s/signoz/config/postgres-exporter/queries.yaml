@@ -1,0 +1,617 @@
+pg_replication:
+  query: "SELECT CASE WHEN NOT pg_is_in_recovery() THEN 0 ELSE GREATEST (0, EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))) END AS lag"
+  master: true
+  metrics:
+    - lag:
+        usage: "GAUGE"
+        description: "Replication lag behind master in seconds"
+
+pg_postmaster:
+  query: "SELECT pg_postmaster_start_time as start_time_seconds from pg_postmaster_start_time()"
+  master: true
+  metrics:
+    - start_time_seconds:
+        usage: "GAUGE"
+        description: "Time at which postmaster started"
+
+pg_locks:
+  query: |
+    SELECT
+      granted,
+      COALESCE(count, 0) AS count
+    FROM
+      (VALUES (true), (false)) AS granted(granted)
+    LEFT JOIN (
+      SELECT
+        granted,
+        COUNT(*) AS count
+      FROM
+        pg_locks
+      GROUP BY 1
+    ) AS locks
+    USING (granted)
+  metrics:
+    - granted:
+        usage: "LABEL"
+        description: "True if lock is held, false if lock is awaited"
+    - count:
+        usage: "GAUGE"
+        description: Number of locks
+
+pg_all_stat_user_tables:
+  query: |
+    SELECT
+      SUM(seq_scan) AS seq_scan,
+      SUM(seq_tup_read) AS seq_tup_read,
+      SUM(idx_scan) AS idx_scan,
+      SUM(idx_tup_fetch) AS idx_tup_fetch,
+      SUM(n_tup_ins) AS n_tup_ins,
+      SUM(n_tup_upd) AS n_tup_upd,
+      SUM(n_tup_del) AS n_tup_del,
+      SUM(n_tup_hot_upd) AS n_tup_hot_upd,
+      SUM(n_live_tup) AS n_live_tup,
+      SUM(n_dead_tup) AS n_dead_tup,
+      SUM(vacuum_count) + SUM(autovacuum_count) AS vacuum_count,
+      SUM(analyze_count) + SUM(autoanalyze_count) AS analyze_count,
+      SUM(heap_blks_read) AS heap_blks_read,
+      SUM(heap_blks_hit) AS heap_blks_hit,
+      SUM(idx_blks_read) AS idx_blks_read,
+      SUM(idx_blks_hit) AS idx_blks_hit,
+      SUM(COALESCE(toast_blks_read, 0)) AS toast_blks_read,
+      SUM(COALESCE(toast_blks_hit, 0)) AS toast_blks_hit,
+      SUM(COALESCE(tidx_blks_read, 0)) AS tidx_blks_read,
+      SUM(COALESCE(tidx_blks_hit, 0)) AS tidx_blks_hit
+    FROM
+      pg_stat_user_tables
+    JOIN
+      pg_statio_user_tables
+    USING
+      (relname)
+  metrics:
+    - seq_scan:
+        usage: "COUNTER"
+        description: "Number of sequential scans initiated on this table"
+    - seq_tup_read:
+        usage: "COUNTER"
+        description: "Number of live rows fetched by sequential scans"
+    - idx_scan:
+        usage: "COUNTER"
+        description: "Number of index scans initiated on this table"
+    - idx_tup_fetch:
+        usage: "COUNTER"
+        description: "Number of live rows fetched by index scans"
+    - n_tup_ins:
+        usage: "COUNTER"
+        description: "Number of rows inserted"
+    - n_tup_upd:
+        usage: "COUNTER"
+        description: "Number of rows updated"
+    - n_tup_del:
+        usage: "COUNTER"
+        description: "Number of rows deleted"
+    - n_tup_hot_upd:
+        usage: "COUNTER"
+        description: "Number of rows HOT updated (i.e., with no separate index update required)"
+    - n_live_tup:
+        usage: "GAUGE"
+        description: "Estimated number of live rows"
+    - n_dead_tup:
+        usage: "GAUGE"
+        description: "Estimated number of dead rows"
+    - vacuum_count:
+        usage: "COUNTER"
+        description: "Number of times this table has been vacuumed (manually or automatic)"
+    - analyze_count:
+        usage: "COUNTER"
+        description: "Number of times this table has been analyzed (manually or automatic)"
+    - heap_blks_read:
+        usage: "COUNTER"
+        description: "Number of disk blocks read from this table"
+    - heap_blks_hit:
+        usage: "COUNTER"
+        description: "Number of buffer hits in this table"
+    - idx_blks_read:
+        usage: "COUNTER"
+        description: "Number of disk blocks read from all indexes on this table"
+    - idx_blks_hit:
+        usage: "COUNTER"
+        description: "Number of buffer hits in all indexes on this table"
+    - toast_blks_read:
+        usage: "COUNTER"
+        description: "Number of disk blocks read from this table's TOAST table (if any)"
+    - toast_blks_hit:
+        usage: "COUNTER"
+        description: "Number of buffer hits in this table's TOAST table (if any)"
+    - tidx_blks_read:
+        usage: "COUNTER"
+        description: "Number of disk blocks read from this table's TOAST table indexes (if any)"
+    - tidx_blks_hit:
+        usage: "COUNTER"
+        description: "Number of buffer hits in this table's TOAST table indexes (if any)"
+
+pg_stat_user_tables:
+  query: |
+    SELECT
+      current_database() AS database,
+      relname AS table,
+      seq_scan,
+      seq_tup_read,
+      idx_scan,
+      idx_tup_fetch,
+      n_tup_ins,
+      n_tup_upd,
+      n_tup_del,
+      n_tup_hot_upd,
+      n_live_tup,
+      n_dead_tup,
+      vacuum_count + autovacuum_count AS vacuum_count,
+      analyze_count + autoanalyze_count AS analyze_count,
+      heap_blks_read,
+      heap_blks_hit,
+      idx_blks_read,
+      idx_blks_hit,
+      COALESCE(toast_blks_read, 0) AS toast_blks_read,
+      COALESCE(toast_blks_hit, 0) AS toast_blks_hit,
+      COALESCE(tidx_blks_read, 0) AS tidx_blks_read,
+      COALESCE(tidx_blks_hit, 0) AS tidx_blks_hit,
+      pg_relation_size(relname::text) AS relation_size,
+      pg_total_relation_size(relname::text) AS total_relation_size
+    FROM
+      pg_stat_user_tables
+    JOIN
+      pg_statio_user_tables
+    USING
+      (relname)
+    WHERE
+      relname IN ('api_keys', 'ai_tags', 'favorites', 'good_jobs', 'media_assets', 'media_metadata', 'posts', 'post_votes', 'rate_limits', 'tags', 'uploads', 'upload_media_assets', 'users')
+  metrics:
+    - database:
+        usage: "LABEL"
+        description: "Name of current database"
+    - table:
+        usage: "LABEL"
+        description: "Name of this table"
+    - seq_scan:
+        usage: "COUNTER"
+        description: "Number of sequential scans initiated on this table"
+    - seq_tup_read:
+        usage: "COUNTER"
+        description: "Number of live rows fetched by sequential scans"
+    - idx_scan:
+        usage: "COUNTER"
+        description: "Number of index scans initiated on this table"
+    - idx_tup_fetch:
+        usage: "COUNTER"
+        description: "Number of live rows fetched by index scans"
+    - n_tup_ins:
+        usage: "COUNTER"
+        description: "Number of rows inserted"
+    - n_tup_upd:
+        usage: "COUNTER"
+        description: "Number of rows updated"
+    - n_tup_del:
+        usage: "COUNTER"
+        description: "Number of rows deleted"
+    - n_tup_hot_upd:
+        usage: "COUNTER"
+        description: "Number of rows HOT updated (i.e., with no separate index update required)"
+    - n_live_tup:
+        usage: "GAUGE"
+        description: "Estimated number of live rows"
+    - n_dead_tup:
+        usage: "GAUGE"
+        description: "Estimated number of dead rows"
+    - vacuum_count:
+        usage: "COUNTER"
+        description: "Number of times this table has been vacuumed (manually or automatic)"
+    - analyze_count:
+        usage: "COUNTER"
+        description: "Number of times this table has been analyzed (manually or automatic)"
+    - heap_blks_read:
+        usage: "COUNTER"
+        description: "Number of disk blocks read from this table"
+    - heap_blks_hit:
+        usage: "COUNTER"
+        description: "Number of buffer hits in this table"
+    - idx_blks_read:
+        usage: "COUNTER"
+        description: "Number of disk blocks read from all indexes on this table"
+    - idx_blks_hit:
+        usage: "COUNTER"
+        description: "Number of buffer hits in all indexes on this table"
+    - toast_blks_read:
+        usage: "COUNTER"
+        description: "Number of disk blocks read from this table's TOAST table (if any)"
+    - toast_blks_hit:
+        usage: "COUNTER"
+        description: "Number of buffer hits in this table's TOAST table (if any)"
+    - tidx_blks_read:
+        usage: "COUNTER"
+        description: "Number of disk blocks read from this table's TOAST table indexes (if any)"
+    - tidx_blks_hit:
+        usage: "COUNTER"
+        description: "Number of buffer hits in this table's TOAST table indexes (if any)"
+    - relation_size:
+        usage: "GAUGE"
+        description: "Size of the table in bytes (excluding indexes)"
+    - total_relation_size:
+        usage: "GAUGE"
+        description: "Size of the table in bytes (including indexes)"
+
+#
+# WARNING: 
+#   This set of metrics can be very expensive on a busy server as every
+#   unique query executed will create an additional time series
+#
+# pg_stat_statements:
+#   query: |
+#     SELECT
+#       pg_get_userbyid(userid) as user,
+#       pg_database.datname,
+#       pg_stat_statements.queryid,
+#       pg_stat_statements.calls as calls_total,
+#       pg_stat_statements.total_time / 1000.0 as seconds_total,
+#       pg_stat_statements.rows as rows_total,
+#       pg_stat_statements.blk_read_time / 1000.0 as block_read_seconds_total,
+#       pg_stat_statements.blk_write_time / 1000.0 as block_write_seconds_total
+#       FROM pg_stat_statements
+#       JOIN pg_database
+#         ON pg_database.oid = pg_stat_statements.dbid
+#       WHERE
+#         total_time > (
+#           SELECT percentile_cont(0.1)
+#             WITHIN GROUP (ORDER BY total_time)
+#             FROM pg_stat_statements
+#         )
+#       ORDER BY seconds_total DESC
+#       LIMIT 100
+#   metrics:
+#     - user:
+#         usage: "LABEL"
+#         description: "The user who executed the statement"
+#     - datname:
+#         usage: "LABEL"
+#         description: "The database in which the statement was executed"
+#     - queryid:
+#         usage: "LABEL"
+#         description: "Internal hash code, computed from the statement's parse tree"
+#     - calls_total:
+#         usage: "COUNTER"
+#         description: "Number of times executed"
+#     - seconds_total:
+#         usage: "COUNTER"
+#         description: "Total time spent in the statement, in seconds"
+#     - rows_total:
+#         usage: "COUNTER"
+#         description: "Total number of rows retrieved or affected by the statement"
+#     - block_read_seconds_total:
+#         usage: "COUNTER"
+#         description: "Total time the statement spent reading blocks, in seconds"
+#     - block_write_seconds_total:
+#         usage: "COUNTER"
+#         description: "Total time the statement spent writing blocks, in seconds"
+
+pg_backend_state:
+  query: |
+    SELECT
+      backend_types.backend_type,
+      COALESCE(backend_stats.state, 'active') AS state,
+      COALESCE(backend_stats.count, 0) AS count
+    FROM
+      (VALUES ('client backend'), ('parallel worker')) AS backend_types(backend_type)
+    LEFT JOIN (
+      SELECT
+        CASE state WHEN 'active' THEN 'active' ELSE 'inactive' END AS state,
+        backend_type,
+        COUNT(*) AS count
+      FROM
+        pg_stat_activity
+      WHERE
+        state != ''
+      GROUP BY
+        1, 2
+    ) backend_stats
+    ON backend_types.backend_type = backend_stats.backend_type;
+  metrics:
+    - state:
+        usage: "LABEL"
+        description: "The state of the backend"
+    - backend_type:
+        usage: "LABEL"
+        description: "The type of backend"
+    - count:
+        usage: "GAUGE"
+        description: "The number of backends in this state"
+
+pg_stat_bgwriter:
+  query: |
+    SELECT 
+      checkpoints_timed,
+      checkpoints_req,
+      checkpoint_write_time,
+      checkpoint_sync_time,
+      buffers_checkpoint,
+      buffers_clean,
+      maxwritten_clean,
+      buffers_backend,
+      buffers_backend_fsync,
+      buffers_alloc
+    FROM
+      pg_stat_bgwriter
+  metrics:
+    - checkpoints_timed:
+        usage: "COUNTER"
+        description: "Number of scheduled checkpoints that have been performed"
+    - checkpoints_req:
+        usage: "COUNTER"
+        description: "Number of requested checkpoints that have been performed"
+    - checkpoint_write_time:
+        usage: "COUNTER"
+        description: "Total amount of time spent during checkpoints writing files to disk, in milliseconds"
+    - checkpoint_sync_time:
+        usage: "COUNTER"
+        description: "Total amount of time spent during checkpoints syncing files to disk, in milliseconds"
+    - buffers_checkpoint:
+        usage: "COUNTER"
+        description: "Number of buffers written during checkpoints"
+    - buffers_clean:
+        usage: "COUNTER"
+        description: "Number of buffers written by the background writer"
+    - maxwritten_clean:
+        usage: "COUNTER"
+        description: "Number of times the background writer stopped a cleaning scan because it had written too many buffers"
+    - buffers_backend:
+        usage: "COUNTER"
+        description: "Number of buffers written directly by a backend"
+    - buffers_backend_fsync:
+        usage: "COUNTER"
+        description: "Number of times a backend had to execute its own fsync call (normally the background writer handles those even when the backend does its own write)"
+    - buffers_alloc:
+        usage: "COUNTER"
+        description: "Number of buffers allocated"
+
+pg_stat_wal:
+  query: |
+    SELECT 
+      wal_records AS records,
+      wal_fpi AS fpi,
+      wal_bytes AS bytes,
+      wal_buffers_full AS buffers_full,
+      wal_write AS write,
+      wal_sync AS sync,
+      wal_write_time AS write_time,
+      wal_sync_time AS sync_time
+    FROM
+      pg_stat_wal
+  metrics:
+    - records:
+        usage: "COUNTER"
+        description: Total number of WAL records generated
+    - fpi:
+        usage: "COUNTER"
+        description: Total number of WAL full page images generated
+    - bytes:
+        usage: "COUNTER"
+        description: Total amount of WAL generated in bytes
+    - buffers_full:
+        usage: "COUNTER"
+        description: Number of times WAL data was written to disk because WAL buffers became full
+    - write:
+        usage: "COUNTER"
+        description: Number of times WAL buffers were written out to disk via XLogWrite request. See Section 30.5 for more information about the internal WAL function XLogWrite.
+    - sync:
+        usage: "COUNTER"
+        description: Number of times WAL files were synced to disk via issue_xlog_fsync request (if fsync is on and wal_sync_method is either fdatasync, fsync or fsync_writethrough, otherwise zero). See Section 30.5 for more information about the internal WAL function issue_xlog_fsync.
+    - write_time:
+        usage: "COUNTER"
+        description: Total amount of time spent writing WAL buffers to disk via XLogWrite request, in milliseconds (if track_wal_io_timing is enabled, otherwise zero). This includes the sync time when wal_sync_method is either open_datasync or open_sync.
+    - sync_time:
+        usage: "COUNTER"
+        description: Total amount of time spent syncing WAL files to disk via issue_xlog_fsync request, in milliseconds (if track_wal_io_timing is enabled, fsync is on, and wal_sync_method is either fdatasync, fsync or fsync_writethrough, otherwise zero).
+
+pg_stat_database:
+  query: |
+    SELECT 
+      datid,
+      datname AS database,
+      numbackends,
+      xact_commit,
+      xact_rollback,
+      blks_read,
+      blks_hit,
+      tup_returned,
+      tup_fetched,
+      tup_inserted,
+      tup_updated,
+      tup_deleted,
+      conflicts,
+      temp_files,
+      temp_bytes,
+      deadlocks,
+      blk_read_time,
+      blk_write_time,
+      session_time,
+      active_time,
+      idle_in_transaction_time,
+      sessions,
+      sessions_abandoned,
+      sessions_fatal,
+      sessions_killed,
+      pg_database_size(datname) AS size
+    FROM
+      pg_stat_database
+    WHERE
+      datname = current_database()
+  metrics:
+    - database:
+        usage: "LABEL"
+        description: Name of this database
+    - numbackends:
+        usage: "GAUGE"
+        description: Number of backends currently connected to this database, or NULL for shared objects. This is the only column in this view that returns a value reflecting current state; all other columns return the accumulated values since the last reset.
+    - xact_commit:
+        usage: "COUNTER"
+        description: Number of transactions in this database that have been committed
+    - xact_rollback:
+        usage: "COUNTER"
+        description: Number of transactions in this database that have been rolled back
+    - blks_read:
+        usage: "COUNTER"
+        description: Number of disk blocks read in this database
+    - blks_hit:
+        usage: "COUNTER"
+        description: Number of times disk blocks were found already in the buffer cache, so that a read was not necessary (this only includes hits in the PostgreSQL buffer cache, not the operating system's file system cache)
+    - tup_returned:
+        usage: "COUNTER"
+        description: Number of live rows fetched by sequential scans and index entries returned by index scans in this database
+    - tup_fetched:
+        usage: "COUNTER"
+        description: Number of live rows fetched by index scans in this database
+    - tup_inserted:
+        usage: "COUNTER"
+        description: Number of rows inserted by queries in this database
+    - tup_updated:
+        usage: "COUNTER"
+        description: Number of rows updated by queries in this database
+    - tup_deleted:
+        usage: "COUNTER"
+        description: Number of rows deleted by queries in this database
+    - conflicts:
+        usage: "COUNTER"
+        description: Number of queries canceled due to conflicts with recovery in this database. (Conflicts occur only on standby servers; see pg_stat_database_conflicts for details.)
+    - temp_files:
+        usage: "COUNTER"
+        description: Number of temporary files created by queries in this database. All temporary files are counted, regardless of why the temporary file was created (e.g., sorting or hashing), and regardless of the log_temp_files setting.
+    - temp_bytes:
+        usage: "COUNTER"
+        description: Total amount of data written to temporary files by queries in this database. All temporary files are counted, regardless of why the temporary file was created, and regardless of the log_temp_files setting.
+    - deadlocks:
+        usage: "COUNTER"
+        description: Number of deadlocks detected in this database
+    - blk_read_time:
+        usage: "COUNTER"
+        description: Time spent reading data file blocks by backends in this database, in milliseconds (if track_io_timing is enabled, otherwise zero)
+    - blk_write_time:
+        usage: "COUNTER"
+        description: Time spent writing data file blocks by backends in this database, in milliseconds (if track_io_timing is enabled, otherwise zero)
+    - session_time:
+        usage: "COUNTER"
+        description: Time spent by database sessions in this database, in milliseconds (note that statistics are only updated when the state of a session changes, so if sessions have been idle for a long time, this idle time won't be included)
+    - active_time:
+        usage: "COUNTER"
+        description: Time spent executing SQL statements in this database, in milliseconds (this corresponds to the states active and fastpath function call in pg_stat_activity)
+    - idle_in_transaction_time:
+        usage: "COUNTER"
+        description: Time spent idling while in a transaction in this database, in milliseconds (this corresponds to the states idle in transaction and idle in transaction (aborted) in pg_stat_activity)
+    - sessions:
+        usage: "COUNTER"
+        description: Total number of sessions established to this database
+    - sessions_abandoned:
+        usage: "COUNTER"
+        description: Number of database sessions to this database that were terminated because connection to the client was lost
+    - sessions_fatal:
+        usage: "COUNTER"
+        description: Number of database sessions to this database that were terminated by fatal errors
+    - sessions_killed:
+        usage: "COUNTER"
+        description: Number of database sessions to this database that were terminated by operator intervention
+    - size:
+        usage: "GAUGE"
+        description: Size of the database in bytes.
+
+pg_stat_archiver:
+  query: |
+    SELECT 
+      archived_count,
+      failed_count
+    FROM
+      pg_stat_archiver
+  metrics:
+    - archived_count:
+        usage: "COUNTER"
+        description: Number of WAL files that have been successfully archived
+    - failed_count:
+        usage: "COUNTER"
+        description: Number of failed attempts for archiving WAL files
+
+pg_index:
+  query: |
+    SELECT
+      pg_stat_user_indexes.relname AS table,
+      indexrelname AS index,
+      idx_scan,
+      idx_tup_read,
+      idx_tup_fetch,
+      idx_blks_read,
+      idx_blks_hit,
+      pg_total_relation_size(indexrelname::text) AS size
+    FROM
+      pg_stat_user_indexes
+    JOIN
+      pg_statio_all_indexes
+    USING
+      (relname, indexrelname)
+    ORDER BY
+      idx_scan + idx_tup_read + idx_tup_fetch + idx_blks_read + idx_blks_hit DESC
+    LIMIT
+      15
+  metrics:
+    - table:
+        usage: "LABEL"
+        description: Name of the table for this index
+    - index:
+        usage: "LABEL"
+        description: Name of the index
+    - idx_scan:
+        usage: "COUNTER"
+        description: Number of index scans initiated on this index
+    - idx_tup_read:
+        usage: "COUNTER"
+        description: Number of index entries returned by scans on this index 
+    - idx_tup_fetch:
+        usage: "COUNTER"
+        description: Number of live table rows fetched by simple index scans using this index
+    - idx_blks_read:
+        usage: "COUNTER"
+        description: Number of disk blocks read from this index
+    - idx_blks_hit:
+        usage: "COUNTER"
+        description: Number of buffer hits in this index
+    - size:
+        usage: "GAUGE"
+        description: Size of the index in bytes.
+
+pg_all_indexes:
+  query: |
+    SELECT
+      SUM(idx_scan) AS idx_scan,
+      SUM(idx_tup_read) AS idx_tup_read,
+      SUM(idx_tup_fetch) AS idx_tup_fetch,
+      SUM(idx_blks_read) AS idx_blks_read,
+      SUM(idx_blks_hit) AS idx_blks_hit,
+      SUM(pg_total_relation_size(indexrelname::text)) AS size
+    FROM
+      pg_stat_user_indexes
+    JOIN
+      pg_statio_all_indexes
+    USING
+      (relname, indexrelname)
+  metrics:
+    - idx_scan:
+        usage: "COUNTER"
+        description: Number of index scans initiated on this index
+    - idx_tup_read:
+        usage: "COUNTER"
+        description: Number of index entries returned by scans on this index 
+    - idx_tup_fetch:
+        usage: "COUNTER"
+        description: Number of live table rows fetched by simple index scans using this index
+    - idx_blks_read:
+        usage: "COUNTER"
+        description: Number of disk blocks read from this index
+    - idx_blks_hit:
+        usage: "COUNTER"
+        description: Number of buffer hits in this index
+    - size:
+        usage: "GAUGE"
+        description: Size of the index in bytes.

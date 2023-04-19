@@ -41,6 +41,21 @@ receivers:
           regex: "^go_.*|^promhttp_.*|^process_.*"
           action: drop
 
+  prometheus/postgres:
+    config:
+      scrape_configs:
+      - job_name: postgres-metrics
+        scrape_interval: 60s
+        static_configs:
+        - targets:
+          - postgres-exporter.signoz.svc.cluster.local:9187
+          labels:
+            job_name: postgres-metrics
+        metric_relabel_configs:
+        - source_labels: [__name__]
+          regex: "^go_.*|^promhttp_.*|^process_.*(max|fds).*|^pg_exporter.*|^pg_scrape.*|^postgres_exporter.*|^pg_stat_bgwriter_.*_total|^pg_database_size_bytes"
+          action: drop
+
   prometheus/node:
     config:
       scrape_configs:
@@ -151,7 +166,7 @@ service:
     - pprof
   pipelines:
     metrics:
-      receivers: [redis, prometheus/internal]
+      receivers: [redis, prometheus/postgres, prometheus/internal]
       processors: [memory_limiter, batch]
       exporters: [clickhousemetricswrite]
     metrics/cloudflare:

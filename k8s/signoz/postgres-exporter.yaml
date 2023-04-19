@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-exporter
+  namespace: signoz
+  labels:
+    app: postgres-exporter
+
+spec:
+  selector:
+    matchLabels:
+      app: postgres-exporter
+
+  template:
+    metadata:
+      labels:
+        app: postgres-exporter
+
+    spec:
+      containers:
+      - name: postgres-exporter
+        image: quay.io/prometheuscommunity/postgres-exporter:v0.12.0
+        args:
+        - --disable-default-metrics
+        - --disable-settings-metrics
+        - --extend.query-path=/etc/postgres-exporter/queries.yaml
+
+        ports:
+        - containerPort: 9187
+
+        env:
+        - name: DATA_SOURCE_URI
+          value: "postgres-14.danbooru.svc.cluster.local/danbooru2?sslmode=disable"
+
+        envFrom:
+        - secretRef:
+            name: postgres-exporter-secret-env
+
+        volumeMounts:
+        - name: postgres-exporter-config
+          mountPath: /etc/postgres-exporter
+          readOnly: true
+
+      volumes:
+      - name: postgres-exporter-config
+        configMap:
+          name: postgres-exporter-config
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: postgres-exporter
+  namespace: signoz
+  labels:
+    app: postgres-exporter
+
+spec:
+  selector:
+    app: postgres-exporter
+  ports:
+  - name: postgres-exporter
+    port: 9187

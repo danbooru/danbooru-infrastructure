@@ -12,6 +12,7 @@ resources:
 - otel-collector-metrics.yaml
 - cloudflare-exporter.yaml
 - prometheus-node-exporter.yaml
+- postgres-exporter.yaml
 
 configMapGenerator:
 - name: clickhouse-config
@@ -48,3 +49,8 @@ configMapGenerator:
   namespace: signoz
   files:
   - config/otel-collector-metrics/config.yaml
+
+- name: postgres-exporter-config
+  namespace: signoz
+  files:
+  - config/postgres-exporter/queries.yaml
