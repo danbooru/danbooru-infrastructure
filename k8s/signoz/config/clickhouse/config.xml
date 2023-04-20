@@ -540,35 +540,8 @@
 
         <!-- Interval of flushing data. -->
         <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+        <ttl>event_date + INTERVAL 3 DAY DELETE</ttl>
     </query_log>
-
-    <!-- Trace log. Stores stack traces collected by query profilers.
-         See query_profiler_real_time_period_ns and query_profiler_cpu_time_period_ns settings. -->
-    <trace_log>
-        <database>system</database>
-        <table>trace_log</table>
-
-        <partition_by>toYYYYMM(event_date)</partition_by>
-        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
-    </trace_log>
-
-    <!-- Query thread log. Has information about all threads participated in query execution.
-         Used only for queries with setting log_query_threads = 1. -->
-    <query_thread_log>
-        <database>system</database>
-        <table>query_thread_log</table>
-        <partition_by>toYYYYMM(event_date)</partition_by>
-        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
-    </query_thread_log>
-
-    <!-- Query views log. Has information about all dependent views associated with a query.
-         Used only for queries with setting log_query_views = 1. -->
-    <query_views_log>
-        <database>system</database>
-        <table>query_views_log</table>
-        <partition_by>toYYYYMM(event_date)</partition_by>
-        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
-    </query_views_log>
 
     <!-- Uncomment if use part log.
          Part log contains information about all actions with parts in MergeTree tables (creation, deletion, merges, downloads).-->
@@ -577,94 +550,8 @@
         <table>part_log</table>
         <partition_by>toYYYYMM(event_date)</partition_by>
         <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+        <ttl>event_date + INTERVAL 3 DAY DELETE</ttl>
     </part_log>
-
-    <!-- Uncomment to write text log into table.
-         Text log contains all information from usual server log but stores it in structured and efficient way.
-         The level of the messages that goes to the table can be limited (<level>), if not specified all messages will go to the table.
-    <text_log>
-        <database>system</database>
-        <table>text_log</table>
-        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
-        <level></level>
-    </text_log>
-    -->
-
-    <!-- Metric log contains rows with current values of ProfileEvents, CurrentMetrics collected with "collect_interval_milliseconds" interval. -->
-    <metric_log>
-        <database>system</database>
-        <table>metric_log</table>
-        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
-        <collect_interval_milliseconds>1000</collect_interval_milliseconds>
-    </metric_log>
-
-    <!--
-        Asynchronous metric log contains values of metrics from
-        system.asynchronous_metrics.
-    -->
-    <asynchronous_metric_log>
-        <database>system</database>
-        <table>asynchronous_metric_log</table>
-        <!--
-            Asynchronous metrics are updated once a minute, so there is
-            no need to flush more often.
-        -->
-        <flush_interval_milliseconds>7000</flush_interval_milliseconds>
-    </asynchronous_metric_log>
-
-    <!--
-        OpenTelemetry log contains OpenTelemetry trace spans.
-    -->
-    <opentelemetry_span_log>
-        <!--
-            The default table creation code is insufficient, this <engine> spec
-            is a workaround. There is no 'event_time' for this log, but two times,
-            start and finish. It is sorted by finish time, to avoid inserting
-            data too far away in the past (probably we can sometimes insert a span
-            that is seconds earlier than the last span in the table, due to a race
-            between several spans inserted in parallel). This gives the spans a
-            global order that we can use to e.g. retry insertion into some external
-            system.
-        -->
-        <engine>
-            engine MergeTree
-            partition by toYYYYMM(finish_date)
-            order by (finish_date, finish_time_us, trace_id)
-        </engine>
-        <database>system</database>
-        <table>opentelemetry_span_log</table>
-        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
-    </opentelemetry_span_log>
-
-
-    <!-- Crash log. Stores stack traces for fatal errors.
-         This table is normally empty. -->
-    <crash_log>
-        <database>system</database>
-        <table>crash_log</table>
-
-        <partition_by />
-        <flush_interval_milliseconds>1000</flush_interval_milliseconds>
-    </crash_log>
-
-    <!-- Session log. Stores user log in (successful or not) and log out events.
-        Note: session log has known security issues and should not be used in production.
-    -->
-    <!-- <session_log>
-        <database>system</database>
-        <table>session_log</table>
-        <partition_by>toYYYYMM(event_date)</partition_by>
-        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
-    </session_log> -->
-
-    <!-- Profiling on Processors level. -->
-    <processors_profile_log>
-        <database>system</database>
-        <table>processors_profile_log</table>
-
-        <partition_by>toYYYYMM(event_date)</partition_by>
-        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
-    </processors_profile_log>
 
     <!-- <top_level_domains_path>/var/lib/clickhouse/top_level_domains/</top_level_domains_path> -->
     <!-- Custom TLD lists.
