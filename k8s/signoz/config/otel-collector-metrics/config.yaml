@@ -56,6 +56,17 @@ receivers:
           regex: "^go_.*|^promhttp_.*|^process_.*(max|fds).*|^pg_exporter.*|^pg_scrape.*|^postgres_exporter.*|^pg_stat_bgwriter_.*_total|^pg_database_size_bytes"
           action: drop
 
+  prometheus/clickhouse:
+    config:
+      scrape_configs:
+      - job_name: clickhouse-metrics
+        scrape_interval: 60s
+        static_configs:
+        - targets:
+          - clickhouse.signoz.svc.cluster.local:9363
+          labels:
+            job_name: clickhouse-metrics
+
   prometheus/node:
     config:
       scrape_configs:
@@ -138,6 +149,160 @@ processors:
         label_set: ["chip", "node"] # drop `sensor`
         aggregation_type: max
 
+  filter/clickhouse:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+          - ClickHouseProfileEvents_Query
+          - ClickHouseProfileEvents_SelectQuery
+          - ClickHouseProfileEvents_InsertQuery
+          - ClickHouseProfileEvents_AsyncInsertQuery
+          - ClickHouseProfileEvents_AsyncInsertBytes
+          - ClickHouseProfileEvents_FailedQuery
+          - ClickHouseProfileEvents_FailedSelectQuery
+          - ClickHouseProfileEvents_FailedInsertQuery
+          - ClickHouseProfileEvents_FailedAsyncInsertQuery
+          - ClickHouseProfileEvents_QueryTimeMicroseconds
+          - ClickHouseProfileEvents_SelectQueryTimeMicroseconds
+          - ClickHouseProfileEvents_InsertQueryTimeMicroseconds
+          - ClickHouseProfileEvents_OtherQueryTimeMicroseconds
+          - ClickHouseProfileEvents_FileOpen
+          - ClickHouseProfileEvents_ReadBufferFromFileDescriptorRead
+          - ClickHouseProfileEvents_ReadBufferFromFileDescriptorReadBytes
+          - ClickHouseProfileEvents_WriteBufferFromFileDescriptorWrite
+          - ClickHouseProfileEvents_WriteBufferFromFileDescriptorWriteBytes
+          - ClickHouseProfileEvents_ReadCompressedBytes
+          - ClickHouseProfileEvents_CompressedReadBufferBlocks
+          - ClickHouseProfileEvents_CompressedReadBufferBytes
+          - ClickHouseProfileEvents_MMappedFileCacheHits
+          - ClickHouseProfileEvents_MMappedFileCacheMisses
+          - ClickHouseProfileEvents_OpenedFileCacheHits
+          - ClickHouseProfileEvents_OpenedFileCacheMisses
+          - ClickHouseProfileEvents_IOBufferAllocs
+          - ClickHouseProfileEvents_IOBufferAllocBytes
+          - ClickHouseProfileEvents_ArenaAllocChunks
+          - ClickHouseProfileEvents_ArenaAllocBytes
+          - ClickHouseProfileEvents_FunctionExecute
+          - ClickHouseProfileEvents_MarkCacheHits
+          - ClickHouseProfileEvents_MarkCacheMisses
+          - ClickHouseProfileEvents_QueryCacheHits
+          - ClickHouseProfileEvents_QueryCacheMisses
+          - ClickHouseProfileEvents_CreatedReadBufferOrdinary
+          - ClickHouseProfileEvents_DiskReadElapsedMicroseconds
+          - ClickHouseProfileEvents_DiskWriteElapsedMicroseconds
+          - ClickHouseProfileEvents_NetworkReceiveElapsedMicroseconds
+          - ClickHouseProfileEvents_NetworkSendElapsedMicroseconds
+          - ClickHouseProfileEvents_NetworkReceiveBytes
+          - ClickHouseProfileEvents_NetworkSendBytes
+          - ClickHouseProfileEvents_InsertedRows
+          - ClickHouseProfileEvents_InsertedBytes
+          - ClickHouseProfileEvents_DelayedInserts
+          - ClickHouseProfileEvents_RejectedInserts
+          - ClickHouseProfileEvents_DelayedInsertsMilliseconds
+          - ClickHouseProfileEvents_DuplicatedInsertedBlocks
+          - ClickHouseProfileEvents_ZooKeeperTransactions
+          - ClickHouseProfileEvents_ZooKeeperList
+          - ClickHouseProfileEvents_ZooKeeperCreate
+          - ClickHouseProfileEvents_ZooKeeperRemove
+          - ClickHouseProfileEvents_ZooKeeperExists
+          - ClickHouseProfileEvents_ZooKeeperGet
+          - ClickHouseProfileEvents_ZooKeeperMulti
+          - ClickHouseProfileEvents_ZooKeeperWatchResponse
+          - ClickHouseProfileEvents_ZooKeeperWaitMicroseconds
+          - ClickHouseProfileEvents_ZooKeeperBytesSent
+          - ClickHouseProfileEvents_ZooKeeperBytesReceived
+          - ClickHouseProfileEvents_ExternalProcessingCompressedBytesTotal
+          - ClickHouseProfileEvents_ExternalProcessingUncompressedBytesTotal
+          - ClickHouseProfileEvents_ExternalProcessingFilesTotal
+          - ClickHouseProfileEvents_ExternalSortWritePart
+          - ClickHouseProfileEvents_ExternalSortMerge
+          - ClickHouseProfileEvents_ExternalSortCompressedBytes
+          - ClickHouseProfileEvents_ExternalSortUncompressedBytes
+          - ClickHouseProfileEvents_ExternalAggregationWritePart
+          - ClickHouseProfileEvents_ExternalAggregationMerge
+          - ClickHouseProfileEvents_ExternalAggregationCompressedBytes
+          - ClickHouseProfileEvents_ExternalAggregationUncompressedBytes
+          - ClickHouseProfileEvents_ExternalJoinWritePart
+          - ClickHouseProfileEvents_ExternalJoinMerge
+          - ClickHouseProfileEvents_ExternalJoinCompressedBytes
+          - ClickHouseProfileEvents_ExternalJoinUncompressedBytes
+          - ClickHouseProfileEvents_SelectedParts
+          - ClickHouseProfileEvents_SelectedRanges
+          - ClickHouseProfileEvents_SelectedMarks
+          - ClickHouseProfileEvents_SelectedRows
+          - ClickHouseProfileEvents_SelectedBytes
+          - ClickHouseProfileEvents_WaitMarksLoadMicroseconds
+          - ClickHouseProfileEvents_BackgroundLoadingMarksTasks
+          - ClickHouseProfileEvents_Merge
+          - ClickHouseProfileEvents_MergedRows
+          - ClickHouseProfileEvents_MergedUncompressedBytes
+          - ClickHouseProfileEvents_MergesTimeMilliseconds
+          - ClickHouseProfileEvents_MergeTreeDataWriterRows
+          - ClickHouseProfileEvents_MergeTreeDataWriterUncompressedBytes
+          - ClickHouseProfileEvents_MergeTreeDataWriterCompressedBytes
+          - ClickHouseProfileEvents_MergeTreeDataWriterBlocks
+          - ClickHouseProfileEvents_MergeTreeDataWriterBlocksAlreadySorted
+          - ClickHouseProfileEvents_InsertedWideParts
+          - ClickHouseProfileEvents_InsertedCompactParts
+          - ClickHouseProfileEvents_InsertedInMemoryParts
+          - ClickHouseProfileEvents_MergedIntoWideParts
+          - ClickHouseProfileEvents_MergedIntoCompactParts
+          - ClickHouseProfileEvents_MergedIntoInMemoryParts
+          - ClickHouseProfileEvents_ContextLock
+          - ClickHouseProfileEvents_RealTimeMicroseconds
+          - ClickHouseProfileEvents_UserTimeMicroseconds
+          - ClickHouseProfileEvents_SystemTimeMicroseconds
+          - ClickHouseProfileEvents_SoftPageFaults
+          - ClickHouseProfileEvents_HardPageFaults
+          - ClickHouseProfileEvents_OSIOWaitMicroseconds
+          - ClickHouseProfileEvents_OSCPUWaitMicroseconds
+          - ClickHouseProfileEvents_OSCPUVirtualTimeMicroseconds
+          - ClickHouseProfileEvents_OSReadBytes
+          - ClickHouseProfileEvents_OSWriteBytes
+          - ClickHouseProfileEvents_OSReadChars
+          - ClickHouseProfileEvents_OSWriteChars
+          - ClickHouseProfileEvents_QueryProfilerRuns
+          - ClickHouseProfileEvents_ThreadPoolReaderPageCacheHit
+          - ClickHouseProfileEvents_ThreadPoolReaderPageCacheHitBytes
+          - ClickHouseProfileEvents_ThreadPoolReaderPageCacheHitElapsedMicroseconds
+          - ClickHouseProfileEvents_ThreadPoolReaderPageCacheMiss
+          - ClickHouseProfileEvents_ThreadPoolReaderPageCacheMissBytes
+          - ClickHouseProfileEvents_ThreadPoolReaderPageCacheMissElapsedMicroseconds
+          - ClickHouseProfileEvents_AsynchronousReadWaitMicroseconds
+          - ClickHouseMetrics_TCPConnection
+          - ClickHouseMetrics_MemoryTracking
+          - ClickHouseMetrics_PartsActive
+          - ClickHouseMetrics_PartsOutdated
+          - ClickHouseMetrics_PartsWide
+          - ClickHouseMetrics_PartsCompact
+          - ClickHouseMetrics_PartsInMemory
+          - ClickHouseMetrics_MMappedFileBytes
+          - ClickHouseAsyncMetrics_MemoryResident
+          - ClickHouseAsyncMetrics_TotalBytesOfMergeTreeTables
+          - ClickHouseAsyncMetrics_TotalRowsOfMergeTreeTables
+          - ClickHouseAsyncMetrics_TotalPartsOfMergeTreeTables
+          - ClickHouseAsyncMetrics_NumberOfDetachedByUserParts
+          - ClickHouseAsyncMetrics_NumberOfDetachedParts
+          - ClickHouseAsyncMetrics_MarkCacheFiles
+          - ClickHouseAsyncMetrics_MarkCacheBytes
+          - ClickHouseAsyncMetrics_HashTableStatsCacheMisses
+          - ClickHouseAsyncMetrics_HashTableStatsCacheEntries
+          - ClickHouseAsyncMetrics_jemalloc_allocated
+          - ClickHouseAsyncMetrics_jemalloc_metadata
+          - ClickHouseAsyncMetrics_jemalloc_metadata_thp
+          - ClickHouseAsyncMetrics_jemalloc_arenas_all_pmuzzy
+          - ClickHouseAsyncMetrics_jemalloc_arenas_all_pactive
+          - ClickHouseAsyncMetrics_jemalloc_background_thread_num_threads
+          - ClickHouseAsyncMetrics_jemalloc_background_thread_num_runs
+          - ClickHouseAsyncMetrics_jemalloc_arenas_all_muzzy_purged
+          - ClickHouseAsyncMetrics_jemalloc_arenas_all_pdirty
+          - ClickHouseAsyncMetrics_jemalloc_arenas_all_dirty_purged
+          - ClickHouseAsyncMetrics_jemalloc_active
+          - ClickHouseAsyncMetrics_jemalloc_retained
+          - ClickHouseAsyncMetrics_jemalloc_mapped
+          - ClickHouseAsyncMetrics_jemalloc_resident
+
 #  transform/node:
 #    metric_statements:
 #    - context: metric
@@ -176,4 +341,8 @@ service:
     metrics/node:
       receivers: [prometheus/node]
       processors: [memory_limiter, metricstransform/node, batch]
+      exporters: [clickhousemetricswrite]
+    metrics/clickhouse:
+      receivers: [prometheus/clickhouse]
+      processors: [memory_limiter, filter/clickhouse, batch]
       exporters: [clickhousemetricswrite]

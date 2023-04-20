@@ -33,6 +33,7 @@ spec:
         - containerPort: 8123
         - containerPort: 9000
         - containerPort: 9005
+        - containerPort: 9363
 
         securityContext:
           capabilities:
@@ -82,3 +83,5 @@ spec:
       port: 9000
     - name: postgres
       port: 9005
+    - name: prometheus
+      port: 9363
