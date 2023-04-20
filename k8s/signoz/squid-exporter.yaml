@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: squid-exporter
+  namespace: signoz
+  labels:
+    app: squid-exporter
+
+spec:
+  selector:
+    matchLabels:
+      app: squid-exporter
+
+  template:
+    metadata:
+      labels:
+        app: squid-exporter
+
+    spec:
+      containers:
+      - name: squid-exporter
+        image: boynux/squid-exporter:v1.10.4
+        args: ["-squid-hostname", "squid.danbooru.svc.cluster.local", "-listen", ":9301"]
+
+        ports:
+        - containerPort: 9301
+
+        # env:
+        # - name: SQUID_LOGIN
+        #   value: username
+        #
+        # env:
+        # - name: SQUID_PASSWORD
+        #   value: pass
+
+        envFrom:
+        - secretRef:
+            name: squid-exporter-secret-env
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: squid-exporter
+  namespace: signoz
+  labels:
+    app: squid-exporter
+
+spec:
+  selector:
+    app: squid-exporter
+  ports:
+  - name: squid-exporter
+    port: 9301

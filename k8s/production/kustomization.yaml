@@ -69,6 +69,10 @@ secretGenerator:
   namespace: signoz
   env: secrets/signoz/postgres-exporter.env
 
+- name: squid-exporter-secret-env
+  namespace: signoz
+  env: secrets/signoz/squid-exporter.env
+
 resources:
 - ../cert-manager
 - ../kubernetes-dashboard

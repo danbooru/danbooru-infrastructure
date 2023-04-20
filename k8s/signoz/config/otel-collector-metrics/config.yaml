@@ -67,6 +67,17 @@ receivers:
           labels:
             job_name: clickhouse-metrics
 
+  prometheus/squid:
+    config:
+      scrape_configs:
+      - job_name: squid-metrics
+        scrape_interval: 60s
+        static_configs:
+        - targets:
+          - squid-exporter.signoz.svc.cluster.local:9301
+          labels:
+            job_name: squid-metrics
+
   prometheus/node:
     config:
       scrape_configs:
@@ -148,6 +159,27 @@ processors:
       - action: aggregate_labels
         label_set: ["chip", "node"] # drop `sensor`
         aggregation_type: max
+
+  filter/squid:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+          - process_cpu_seconds_total
+          - process_resident_memory_bytes
+          - squid_DNS_Lookups_50
+          - squid_DNS_Lookups_95
+          - squid_HTTP_Requests_All_50
+          - squid_HTTP_Requests_All_95
+          - squid_client_http_kbytes_in_kbytes_total
+          - squid_client_http_kbytes_out_kbytes_total
+          - squid_client_http_requests_total
+          - squid_client_http_errors_total
+          - squid_server_all_kbytes_in_kbytes_total
+          - squid_server_all_kbytes_out_kbytes_total
+          - squid_server_all_requests_total
+          - squid_server_all_errors_total
+          - squid_up
 
   filter/clickhouse:
     metrics:
@@ -345,4 +377,8 @@ service:
     metrics/clickhouse:
       receivers: [prometheus/clickhouse]
       processors: [memory_limiter, filter/clickhouse, batch]
+      exporters: [clickhousemetricswrite]
+    metrics/squid:
+      receivers: [prometheus/squid]
+      processors: [memory_limiter, filter/squid, batch]
       exporters: [clickhousemetricswrite]
