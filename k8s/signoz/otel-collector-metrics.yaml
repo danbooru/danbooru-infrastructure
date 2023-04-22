@@ -28,7 +28,6 @@ spec:
         args: ["--config=/etc/otel-collector/config.yaml"]
 
         ports:
-        - containerPort: 1777
         - containerPort: 8888
         - containerPort: 13133
         - containerPort: 55679
@@ -78,8 +77,6 @@ spec:
   selector:
     app: otel-collector-metrics
   ports:
-    - name: pprof
-      port: 1777
     - name: internal-metrics
       port: 8888
     - name: healthcheck

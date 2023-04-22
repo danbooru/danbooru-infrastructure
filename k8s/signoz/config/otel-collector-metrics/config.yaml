@@ -364,8 +364,6 @@ extensions:
     endpoint: 0.0.0.0:13133
   zpages:
     endpoint: 0.0.0.0:55679
-  pprof:
-    endpoint: 0.0.0.0:1777
 
 exporters:
   clickhousemetricswrite:
@@ -378,7 +376,6 @@ service:
   extensions:
     - health_check
     - zpages
-    - pprof
   pipelines:
     metrics:
       receivers: [redis, prometheus/postgres, prometheus/internal]

@@ -31,7 +31,6 @@ spec:
         args: ["-config=/root/config/prometheus.yml"]
 
         ports:
-        - containerPort: 6060
         - containerPort: 8080
 
         envFrom:
@@ -89,7 +88,5 @@ spec:
   selector:
     app: query-service
   ports:
-    - name: pprof
-      port: 6060
     - name: http
       port: 8080
