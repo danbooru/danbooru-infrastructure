@@ -78,6 +78,17 @@ receivers:
           labels:
             job_name: squid-metrics
 
+  prometheus/cert-manager:
+    config:
+      scrape_configs:
+      - job_name: cert-manager-metrics
+        scrape_interval: 60s
+        static_configs:
+        - targets:
+          - cert-manager.cert-manager.svc.cluster.local:9402
+          labels:
+            job_name: cert-manager-metrics
+
   prometheus/node:
     config:
       scrape_configs:
@@ -159,6 +170,13 @@ processors:
       - action: aggregate_labels
         label_set: ["chip", "node"] # drop `sensor`
         aggregation_type: max
+
+  filter/cert-manager:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+          - certmanager_certificate_expiration_timestamp_seconds
 
   filter/squid:
     metrics:
@@ -381,4 +399,8 @@ service:
     metrics/squid:
       receivers: [prometheus/squid]
       processors: [memory_limiter, filter/squid, batch]
+      exporters: [clickhousemetricswrite]
+    metrics/cert-manager:
+      receivers: [prometheus/cert-manager]
+      processors: [memory_limiter, filter/cert-manager, batch]
       exporters: [clickhousemetricswrite]
