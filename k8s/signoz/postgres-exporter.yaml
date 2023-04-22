@@ -41,6 +41,24 @@ spec:
           mountPath: /etc/postgres-exporter
           readOnly: true
 
+        readinessProbe:
+          httpGet:
+            path: "/metrics"
+            port: 9187
+          periodSeconds: 3
+          timeoutSeconds: 3
+          failureThreshold: 5
+          initialDelaySeconds: 3
+
+        livenessProbe:
+          httpGet:
+            path: "/metrics"
+            port: 9187
+          periodSeconds: 60
+          timeoutSeconds: 10
+          failureThreshold: 3
+          initialDelaySeconds: 3
+
       volumes:
       - name: postgres-exporter-config
         configMap:
@@ -60,5 +78,5 @@ spec:
   selector:
     app: postgres-exporter
   ports:
-  - name: postgres-exporter
+  - name: http
     port: 9187

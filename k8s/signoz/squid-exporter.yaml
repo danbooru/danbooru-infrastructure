@@ -25,6 +25,24 @@ spec:
         ports:
         - containerPort: 9301
 
+        readinessProbe:
+          httpGet:
+            path: "/metrics"
+            port: 9301
+          periodSeconds: 3
+          timeoutSeconds: 3
+          failureThreshold: 5
+          initialDelaySeconds: 3
+
+        livenessProbe:
+          httpGet:
+            path: "/metrics"
+            port: 9301
+          periodSeconds: 60
+          timeoutSeconds: 10
+          failureThreshold: 3
+          initialDelaySeconds: 3
+
         # env:
         # - name: SQUID_LOGIN
         #   value: username
@@ -51,5 +69,5 @@ spec:
   selector:
     app: squid-exporter
   ports:
-  - name: squid-exporter
+  - name: http
     port: 9301
