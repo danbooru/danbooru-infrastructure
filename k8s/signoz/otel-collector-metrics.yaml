@@ -29,6 +29,7 @@ spec:
 
         ports:
         - containerPort: 8888
+        - containerPort: 9101
         - containerPort: 13133
         - containerPort: 55679
 
@@ -79,6 +80,8 @@ spec:
   ports:
     - name: internal-metrics
       port: 8888
+    - name: prometheus-debug-metrics
+      port: 9101
     - name: healthcheck
       port: 13133
     - name: zpages

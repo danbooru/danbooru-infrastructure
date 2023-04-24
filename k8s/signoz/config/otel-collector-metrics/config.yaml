@@ -89,6 +89,17 @@ receivers:
           labels:
             job_name: cert-manager-metrics
 
+  prometheus/kube-state-metrics:
+    config:
+      scrape_configs:
+      - job_name: kube-state-metrics
+        scrape_interval: 60s
+        static_configs:
+        - targets:
+          - kube-state-metrics.signoz.svc.cluster.local:8080
+          labels:
+            job_name: kube-state-metrics
+
   prometheus/node:
     config:
       scrape_configs:
@@ -170,6 +181,151 @@ processors:
       - action: aggregate_labels
         label_set: ["chip", "node"] # drop `sensor`
         aggregation_type: max
+
+  attributes/kube-state-metrics:
+    include:
+      match_type: regexp
+      metric_names:
+        - kube_pod
+    actions:
+      - key: pod
+        action: extract
+        pattern: "^(?P<pod_owner>.*?)(?:-[a-f0-9]{8,10})?(?:-[a-z0-9]{5})?$"
+
+  metricstransform/kube-state-metrics:
+    transforms:
+    - include: kube_configmap_info
+      new_name: kube_configmap_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: []
+        aggregation_type: sum
+
+    - include: kube_endpoint_address
+      new_name: kube_endpoint_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [ready]
+        aggregation_type: sum
+
+    - include: kube_replicaset_owner
+      new_name: kube_replicaset_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: []
+        aggregation_type: sum
+
+    - include: kube_secret_type
+      new_name: kube_secret_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [type]
+        aggregation_type: sum
+
+    - include: kube_service_spec_type
+      new_name: kube_service_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [type]
+        aggregation_type: sum
+
+    - include: kube_(node|deployment)_status_condition
+      match_type: regexp
+      action: update
+      operations:
+        - action: delete_label_value
+          label: status
+          label_value: "unknown"
+        - action: delete_label_value
+          label: status
+          label_value: "false"
+
+    - include: kube_deployment_status_condition
+      new_name: kube_deployment_status_condition_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [condition]
+        aggregation_type: sum
+
+    - include: kube_deployment_spec_paused
+      new_name: kube_deployment_spec_paused_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: []
+        aggregation_type: sum
+
+    - include: kube_pod_container_status_restarts_total
+      new_name: kube_pod_container_status_restarts_total_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [namespace, pod_owner, container]
+        aggregation_type: sum
+
+    - include: kube_pod_container_info
+      new_name: kube_pod_container_info_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [container, image_spec, image_id, namespace, pod_owner]
+        aggregation_type: sum
+
+    - include: kube_pod_status_reason
+      new_name: kube_pod_status_reason_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [reason]
+        aggregation_type: sum
+
+    - include: kube_pod_status_phase
+      new_name: kube_pod_status_phase_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [phase]
+        aggregation_type: sum
+
+    - include: kube_pod_status_ready
+      new_name: kube_pod_status_ready_count
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [condition]
+        aggregation_type: sum
+
+  filter/kube-state-metrics:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+           - kube_configmap_count
+           - kube_daemonset_status_number_available
+           - kube_daemonset_status_number_unavailable
+           - kube_daemonset_status_observed_generation
+           - kube_deployment_spec_paused_count
+           - kube_deployment_status_condition_count
+           - kube_deployment_status_observed_generation
+           - kube_endpoint_count
+           - kube_node_spec_unschedulable
+           - kube_node_status_condition
+           - kube_pod_container_info_count
+           - kube_pod_container_status_restarts_total_count
+           - kube_pod_info
+           - kube_pod_status_phase_count
+           - kube_pod_status_ready_count
+           - kube_pod_status_reason_count
+           - kube_replicaset_count
+           - kube_secret_count
+           - kube_service_count
+           - kube_statefulset_status_observed_generation
 
   filter/cert-manager:
     metrics:
@@ -368,6 +524,8 @@ extensions:
 exporters:
   clickhousemetricswrite:
     endpoint: tcp://clickhouse.signoz.svc.cluster.local:9000/?database=signoz_metrics
+  prometheus/debug:
+    endpoint: 0.0.0.0:9101
 
 service:
   telemetry:
@@ -401,3 +559,9 @@ service:
       receivers: [prometheus/cert-manager]
       processors: [memory_limiter, filter/cert-manager, batch]
       exporters: [clickhousemetricswrite]
+    metrics/kube-state-metrics:
+      receivers: [prometheus/kube-state-metrics]
+      processors: [memory_limiter, attributes/kube-state-metrics, metricstransform/kube-state-metrics, filter/kube-state-metrics, batch]
+      exporters: [clickhousemetricswrite]
+      #processors: [memory_limiter, batch]
+      #exporters: [prometheus/debug]
