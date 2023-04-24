@@ -8,6 +8,7 @@ receivers:
   redis:
     endpoint: "redis-svc.danbooru.svc.cluster.local:6379"
     collection_interval: 60s
+
   prometheus/internal:
     config:
       scrape_configs:
@@ -326,6 +327,10 @@ processors:
            - kube_secret_count
            - kube_service_count
            - kube_statefulset_status_observed_generation
+           - scrape_duration_seconds
+           - scrape_samples_scraped
+           - scrape_series_added
+           - up
 
   filter/cert-manager:
     metrics:
@@ -333,6 +338,10 @@ processors:
         match_type: strict
         metric_names:
           - certmanager_certificate_expiration_timestamp_seconds
+          - scrape_duration_seconds
+          - scrape_samples_scraped
+          - scrape_series_added
+          - up
 
   filter/squid:
     metrics:
@@ -354,6 +363,10 @@ processors:
           - squid_server_all_requests_total
           - squid_server_all_errors_total
           - squid_up
+          - scrape_duration_seconds
+          - scrape_samples_scraped
+          - scrape_series_added
+          - up
 
   filter/clickhouse:
     metrics:
@@ -508,6 +521,10 @@ processors:
           - ClickHouseAsyncMetrics_jemalloc_retained
           - ClickHouseAsyncMetrics_jemalloc_mapped
           - ClickHouseAsyncMetrics_jemalloc_resident
+          - scrape_duration_seconds
+          - scrape_samples_scraped
+          - scrape_series_added
+          - up
 
 #  transform/node:
 #    metric_statements:
