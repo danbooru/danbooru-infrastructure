@@ -101,6 +101,34 @@ receivers:
           labels:
             job_name: kube-state-metrics
 
+  prometheus/kubelet:
+    config:
+      scrape_configs:
+      - job_name: kubelet-metrics
+        scrape_interval: 60s
+
+        kubernetes_sd_configs:
+        - role: node
+
+        relabel_configs:
+        - target_label: __address__
+          replacement: kubernetes.default.svc:443
+        - target_label: __metrics_path__
+          source_labels: [__meta_kubernetes_node_name]
+          replacement: /api/v1/nodes/$$1/proxy/metrics
+        - target_label: job_name
+          source_labels: [__meta_kubernetes_node_name]
+          replacement: kubelet-metrics
+        - target_label: node
+          source_labels: [__meta_kubernetes_node_name]
+
+        scheme: https
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+
   prometheus/node:
     config:
       scrape_configs:
@@ -368,6 +396,34 @@ processors:
           - scrape_series_added
           - up
 
+  filter/kubelet:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+        - kubelet_runtime_operations_total
+        - kubelet_runtime_operations_errors_total
+        #- kubelet_runtime_operations_duration_seconds_sum
+        - kubelet_network_plugin_operations_total
+        - kubelet_network_plugin_operations_errors_total
+        #- kubelet_network_plugin_operations_duration_seconds_sum
+        - kubelet_http_requests_total
+        #- kubelet_http_requests_duration_seconds_sum
+        - kubelet_docker_operations_total
+        - kubelet_docker_operations_errors_total
+        #- kubelet_docker_operations_duration_seconds_sum
+        - kubelet_cgroup_manager_duration_seconds_count
+        #- kubelet_cgroup_manager_duration_seconds_sum
+        - storage_operation_errors_total
+        - rest_client_requests_total
+        #- rest_client_request_duration_seconds_sum
+        - process_resident_memory_bytes
+        - process_cpu_seconds_total
+        - scrape_duration_seconds
+        - scrape_samples_scraped
+        - scrape_series_added
+        - up
+
   filter/clickhouse:
     metrics:
       include:
@@ -546,6 +602,8 @@ exporters:
 
 service:
   telemetry:
+#    logs:
+#      level: debug
     metrics:
       address: 0.0.0.0:8888
   extensions:
@@ -582,3 +640,7 @@ service:
       exporters: [clickhousemetricswrite]
       #processors: [memory_limiter, batch]
       #exporters: [prometheus/debug]
+    metrics/kubelet-metrics:
+      receivers: [prometheus/kubelet]
+      processors: [memory_limiter, filter/kubelet, batch]
+      exporters: [clickhousemetricswrite]

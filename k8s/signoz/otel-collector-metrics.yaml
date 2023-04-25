@@ -21,6 +21,8 @@ spec:
         app: otel-collector-metrics
 
     spec:
+      serviceAccountName: otel-collector-metrics
+
       containers:
       - name: otel-collector-metrics
         image: signoz/signoz-otel-collector:0.66.7
@@ -64,6 +66,44 @@ spec:
       - name: otel-collector-metrics-config
         configMap:
           name: otel-collector-metrics-config
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-collector-metrics
+  namespace: signoz
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-collector-metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: otel-collector-metrics
+subjects:
+- kind: ServiceAccount
+  name: otel-collector-metrics
+  namespace: signoz
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: otel-collector-metrics
+rules:
+- verbs: [get]
+  nonResourceURLs: [/metrics, /metrics/*]
+- apiGroups: [""]
+  verbs: [get, list, watch]
+  resources:
+  - nodes/proxy
+  - nodes
+  - pods
 
 ---
 
