@@ -101,9 +101,11 @@ rules:
 - apiGroups: [""]
   verbs: [get, list, watch]
   resources:
-  - nodes/proxy
+  - nodes/metrics
   - nodes
   - pods
+  - endpoints
+  - services
 
 ---
 

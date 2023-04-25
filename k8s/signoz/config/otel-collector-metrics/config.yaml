@@ -107,15 +107,11 @@ receivers:
       - job_name: kubelet-metrics
         scrape_interval: 60s
 
+        # The target defaults to the kubelet (https://<node-ip>:10250/metrics)
         kubernetes_sd_configs:
         - role: node
 
         relabel_configs:
-        - target_label: __address__
-          replacement: kubernetes.default.svc:443
-        - target_label: __metrics_path__
-          source_labels: [__meta_kubernetes_node_name]
-          replacement: /api/v1/nodes/$$1/proxy/metrics
         - target_label: job_name
           source_labels: [__meta_kubernetes_node_name]
           replacement: kubelet-metrics
@@ -134,27 +130,21 @@ receivers:
       scrape_configs:
       - job_name: node-metrics
         scrape_interval: 60s
-        static_configs:
-        - targets: ["172.16.0.7:9100"]
-          labels:
-            job_name: node-metrics
-            node: ame
-        - targets: ["172.16.0.8:9100"]
-          labels:
-            job_name: node-metrics
-            node: gura
-        - targets: ["172.16.0.9:9100"]
-          labels:
-            job_name: node-metrics
-            node: ina
-        - targets: ["172.16.0.10:9100"]
-          labels:
-            job_name: node-metrics
-            node: mori
-        - targets: ["172.16.0.11:9100"]
-          labels:
-            job_name: node-metrics
-            node: kiara
+
+        # The target is node-exporter (http://<node-ip>:9100/metrics)
+        kubernetes_sd_configs:
+        - role: endpoints
+          selectors:
+          - role: endpoints
+            label: "app=node-exporter"
+
+        relabel_configs:
+        - target_label: job_name
+          source_labels: [__meta_kubernetes_endpoint_node_name]
+          replacement: node-metrics
+        - target_label: node
+          source_labels: [__meta_kubernetes_endpoint_node_name]
+
         metric_relabel_configs:
         - source_labels: [__name__]
           regex: "^node_(cooling|cpu_guest|cpu_core_throttle|cpu_frequency_(max|min)|cpu_scaling_frequency_(max|min)|disk_info|exporter|filesystem_(device_error|free_bytes|readonly)|hwmon_(power|chip|sensor)|hwmon_temp_(min|max|crit|alarm)|netstat_(Icmp|Udp)|scrape|network_(up|carrier|address|device|dormant|flags|iface|info|mtu|name|net|protocol|speed)|sockstat_(FRAG|RAW|UDP)|zfs_(abd|arc_(arc|abd|access|anon|l2|hash|evict)|zil_zil_itx|vdev|fm|dnode|dmu|zpool_(state|dataset))).*"
