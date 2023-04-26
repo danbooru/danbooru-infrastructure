@@ -101,13 +101,51 @@ receivers:
           labels:
             job_name: kube-state-metrics
 
+  # TOKEN=$(kubectl get secret otel-collector-metrics-token-j9cx8 -n signoz -o jsonpath='{.data.token}' | base64 -d)
+  # curl -sk -H "Authorization: Bearer $TOKEN" https://172.16.0.x:6443/metrics
+  prometheus/kube-apiserver:
+    config:
+      scrape_configs:
+      - job_name: kube-apiserver-metrics
+        scrape_interval: 60s
+
+        kubernetes_sd_configs:
+        - role: node
+
+        # Scrape control plane nodes on port 6443 (https://172.16.0.x:6443/metrics)
+        relabel_configs:
+        - action: keep
+          source_labels: [__meta_kubernetes_node_label_node_role_kubernetes_io_controlplane]
+          regex: "true"
+        - target_label: __address__
+          source_labels: [__address__]
+          regex: "(.+):[0-9]+"
+          replacement: "$$1:6443"
+        - target_label: job_name
+          source_labels: [__meta_kubernetes_node_name]
+          replacement: kube-apiserver-metrics
+        - target_label: node
+          source_labels: [__meta_kubernetes_node_name]
+
+        metric_relabel_configs:
+        - source_labels: [__name__, le]
+          regex: '.*_bucket;[0-9].*'
+          action: drop
+
+        scheme: https
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+
+  # curl -sk -H "Authorization: Bearer $TOKEN" https://172.16.0.x:10250/metrics
   prometheus/kubelet:
     config:
       scrape_configs:
       - job_name: kubelet-metrics
         scrape_interval: 60s
 
-        # The target defaults to the kubelet (https://<node-ip>:10250/metrics)
         kubernetes_sd_configs:
         - role: node
 
@@ -125,20 +163,20 @@ receivers:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
           insecure_skip_verify: true
 
+  # curl -sk http://172.16.0.x:9100/metrics
   prometheus/node:
     config:
       scrape_configs:
       - job_name: node-metrics
         scrape_interval: 60s
 
-        # The target is node-exporter (http://<node-ip>:9100/metrics)
         kubernetes_sd_configs:
         - role: endpoints
-          selectors:
-          - role: endpoints
-            label: "app=node-exporter"
 
         relabel_configs:
+        - action: keep
+          source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_endpoints_name]
+          regex: signoz;node-exporter
         - target_label: job_name
           source_labels: [__meta_kubernetes_endpoint_node_name]
           replacement: node-metrics
@@ -386,6 +424,116 @@ processors:
           - scrape_series_added
           - up
 
+  metricstransform/kube-apiserver:
+    transforms:
+    - include: ^(apiserver_tls|authenticated|authentication|grpc|workqueue)_.*
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name]
+        aggregation_type: sum
+
+    - include: apiserver_registered_watchers|apiserver_watch_events_total
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [kind, job_name]
+        aggregation_type: sum
+
+    - include: apiserver_request_duration_seconds
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [verb, job_name]
+        aggregation_type: sum
+
+    - include: apiserver_request_total
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [code, verb, job_name]
+        aggregation_type: sum
+
+    - include: rest_client_request_duration_seconds
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [verb, job_name]
+        aggregation_type: sum
+
+    - include: rest_client_requests_total
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [code, method, job_name]
+        aggregation_type: sum
+
+    - include: apiserver_longrunning_gauge
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [verb, job_name]
+        aggregation_type: sum
+
+    - include: etcd_db_total_size_in_bytes
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [node, job_name]
+        aggregation_type: sum
+
+    - include: etcd_object_counts
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [resource, job_name]
+        aggregation_type: max
+
+    - include: etcd_request_duration_seconds
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [operation, job_name]
+        aggregation_type: max
+
+  filter/kube-apiserver:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+        - apiserver_longrunning_gauge
+        - apiserver_registered_watchers
+        - apiserver_request_duration_seconds
+        - apiserver_request_total
+        - apiserver_tls_handshake_errors_total
+        - apiserver_watch_events_total
+        - authenticated_user_requests
+        - authentication_attempts
+        - authentication_duration_seconds
+        - etcd_db_total_size_in_bytes
+        - etcd_object_counts
+        - etcd_request_duration_seconds
+        - grpc_client_handled_total
+        - grpc_client_msg_received_total
+        - grpc_client_msg_sent_total
+        - grpc_client_started_total
+        - rest_client_request_duration_seconds
+        - rest_client_requests_total
+        - workqueue_adds_total
+        - workqueue_depth
+        - workqueue_queue_duration_seconds
+        - workqueue_retries_total
+        - workqueue_unfinished_work_seconds
+        - workqueue_work_duration_seconds
+        - process_resident_memory_bytes
+        - process_cpu_seconds_total
+        - scrape_duration_seconds
+        - scrape_samples_scraped
+        - scrape_series_added
+        - up
+
   filter/kubelet:
     metrics:
       include:
@@ -630,7 +778,11 @@ service:
       exporters: [clickhousemetricswrite]
       #processors: [memory_limiter, batch]
       #exporters: [prometheus/debug]
-    metrics/kubelet-metrics:
+    metrics/kubelet:
       receivers: [prometheus/kubelet]
       processors: [memory_limiter, filter/kubelet, batch]
+      exporters: [clickhousemetricswrite]
+    metrics/kube-apiserver:
+      receivers: [prometheus/kube-apiserver]
+      processors: [memory_limiter, metricstransform/kube-apiserver, filter/kube-apiserver, batch]
       exporters: [clickhousemetricswrite]
