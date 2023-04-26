@@ -101,6 +101,66 @@ receivers:
           labels:
             job_name: kube-state-metrics
 
+  # curl -s http://172.16.0.x:10251/metrics
+  prometheus/kube-scheduler:
+    config:
+      scrape_configs:
+      - job_name: kube-scheduler-metrics
+        scrape_interval: 60s
+
+        kubernetes_sd_configs:
+        - role: node
+
+        # Scrape control plane nodes on port 10251 (http://172.16.0.x:10251/metrics)
+        relabel_configs:
+        - action: keep
+          source_labels: [__meta_kubernetes_node_label_node_role_kubernetes_io_controlplane]
+          regex: "true"
+        - target_label: __address__
+          source_labels: [__address__]
+          regex: "(.+):[0-9]+"
+          replacement: "$$1:10251"
+        - target_label: job_name
+          source_labels: [__meta_kubernetes_node_name]
+          replacement: kube-scheduler-metrics
+        - target_label: node
+          source_labels: [__meta_kubernetes_node_name]
+
+        metric_relabel_configs:
+        - source_labels: [__name__, le]
+          regex: '.*_bucket;[0-9].*'
+          action: drop
+
+  # curl -s http://172.16.0.x:10252/metrics
+  prometheus/kube-controller-manager:
+    config:
+      scrape_configs:
+      - job_name: kube-controller-manager-metrics
+        scrape_interval: 60s
+
+        kubernetes_sd_configs:
+        - role: node
+
+        # Scrape control plane nodes on port 10252 (http://172.16.0.x:10252/metrics)
+        relabel_configs:
+        - action: keep
+          source_labels: [__meta_kubernetes_node_label_node_role_kubernetes_io_controlplane]
+          regex: "true"
+        - target_label: __address__
+          source_labels: [__address__]
+          regex: "(.+):[0-9]+"
+          replacement: "$$1:10252"
+        - target_label: job_name
+          source_labels: [__meta_kubernetes_node_name]
+          replacement: kube-controller-manager-metrics
+        - target_label: node
+          source_labels: [__meta_kubernetes_node_name]
+
+        metric_relabel_configs:
+        - source_labels: [__name__, le]
+          regex: '.*_bucket;[0-9].*'
+          action: drop
+
   # TOKEN=$(kubectl get secret otel-collector-metrics-token-j9cx8 -n signoz -o jsonpath='{.data.token}' | base64 -d)
   # curl -sk -H "Authorization: Bearer $TOKEN" https://172.16.0.x:6443/metrics
   prometheus/kube-apiserver:
@@ -534,6 +594,112 @@ processors:
         - scrape_series_added
         - up
 
+  metricstransform/kube-scheduler:
+    transforms:
+    - include: scheduler_scheduling_algorithm_duration_seconds
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name]
+        aggregation_type: sum
+
+    - include: scheduler_pod_scheduling_duration_seconds
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [attempts, job_name]
+        aggregation_type: sum
+
+    - include: scheduler_pending_pods
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [queue, job_name]
+        aggregation_type: sum
+
+  filter/kube-scheduler:
+    metrics:
+      include:
+        match_type: regexp
+        metric_names:
+        - scheduler_e2e_scheduling_duration_seconds
+        - scheduler_framework_extension_point_duration_seconds
+        - scheduler_pending_pods
+        - scheduler_pod_scheduling_duration_seconds
+        - scheduler_preemption_attempts_total
+        - scheduler_queue_incoming_pods_total
+        - scheduler_schedule_attempts_total
+        - scheduler_scheduler_goroutines
+        - scheduler_scheduling_algorithm_duration_seconds
+        - process_resident_memory_bytes
+        - process_cpu_seconds_total
+        - scrape_duration_seconds
+        - scrape_samples_scraped
+        - scrape_series_added
+        - ^up$
+
+  metricstransform/kube-controller-manager:
+    transforms:
+    - include: ^workqueue_.*
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name]
+        aggregation_type: sum
+
+    - include: rest_client_request_duration_seconds
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [verb, job_name]
+        aggregation_type: sum
+
+  filter/kube-controller-manager:
+    metrics:
+      include:
+        match_type: regexp
+        metric_names:
+        - attachdetach_controller_forced_detaches
+        - cronjob_controller_rate_limiter_use
+        - daemon_controller_rate_limiter_use
+        - deployment_controller_rate_limiter_use
+        - endpoint_controller_rate_limiter_use
+        - endpoint_slice_controller_changes
+        - endpoint_slice_controller_desired_endpoint_slices
+        - endpoint_slice_controller_endpoints_added_per_sync
+        - endpoint_slice_controller_endpoints_desired
+        - endpoint_slice_controller_endpoints_removed_per_sync
+        - endpoint_slice_controller_num_endpoint_slices
+        - endpoint_slice_controller_rate_limiter_use
+        - endpoint_slice_mirroring_controller_endpoints_sync_duration
+        - endpoint_slice_mirroring_controller_rate_limiter_use
+        - job_controller_rate_limiter_use
+        - leader_election_master_status
+        - namespace_controller_rate_limiter_use
+        - node_collector_evictions_number
+        - node_collector_unhealthy_nodes_in_zone
+        - node_collector_zone_health
+        - node_collector_zone_size
+        - node_ipam_controller_cidrset_cidrs_allocations_total
+        - node_ipam_controller_cidrset_usage_cidrs
+        - node_ipam_controller_rate_limiter_use
+        - node_lifecycle_controller_rate_limiter_use
+        - persistentvolume_protection_controller_rate_limiter_use
+        - replicaset_controller_rate_limiter_use
+        - replication_controller_rate_limiter_use
+        - resource_quota_controller_rate_limiter_use
+        - gc_controller_rate_limiter_use
+        - rest_client_request_duration_seconds
+        - rest_client_requests_total
+        - ^workqueue_.*
+        - process_resident_memory_bytes
+        - process_cpu_seconds_total
+        - scrape_duration_seconds
+        - scrape_samples_scraped
+        - scrape_series_added
+        - ^up$
+
   filter/kubelet:
     metrics:
       include:
@@ -781,6 +947,14 @@ service:
     metrics/kubelet:
       receivers: [prometheus/kubelet]
       processors: [memory_limiter, filter/kubelet, batch]
+      exporters: [clickhousemetricswrite]
+    metrics/kube-scheduler:
+      receivers: [prometheus/kube-scheduler]
+      processors: [memory_limiter, metricstransform/kube-scheduler, filter/kube-scheduler, batch]
+      exporters: [clickhousemetricswrite]
+    metrics/kube-controller-manager:
+      receivers: [prometheus/kube-controller-manager]
+      processors: [memory_limiter, metricstransform/kube-controller-manager, filter/kube-controller-manager, batch]
       exporters: [clickhousemetricswrite]
     metrics/kube-apiserver:
       receivers: [prometheus/kube-apiserver]
