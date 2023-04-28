@@ -9,7 +9,7 @@ receivers:
     endpoint: "redis-svc.danbooru.svc.cluster.local:6379"
     collection_interval: 60s
 
-  prometheus/internal:
+  prometheus/otel-collector-metrics:
     config:
       scrape_configs:
         # otel-collector-metrics internal metrics
@@ -222,6 +222,33 @@ receivers:
         tls_config:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
           insecure_skip_verify: true
+
+  # curl -s http://172.16.0.x:10254/metrics
+  prometheus/nginx-ingress:
+    config:
+      scrape_configs:
+      - job_name: nginx-ingress-metrics
+        scrape_interval: 60s
+
+        kubernetes_sd_configs:
+        - role: node
+
+        # Scrape control plane nodes on port 10254 (http://172.16.0.x:10254/metrics)
+        relabel_configs:
+        - target_label: __address__
+          source_labels: [__address__]
+          regex: "(.+):[0-9]+"
+          replacement: "$$1:10254"
+        - target_label: job_name
+          source_labels: [__meta_kubernetes_node_name]
+          replacement: nginx-ingress-metrics
+        - target_label: node
+          source_labels: [__meta_kubernetes_node_name]
+
+        metric_relabel_configs:
+        - source_labels: [__name__, le]
+          regex: 'nginx_ingress_controller_(request|response)_(size|duration_seconds)_bucket;[0-9].*'
+          action: drop
 
   # curl -sk http://172.16.0.x:9100/metrics
   prometheus/node:
@@ -728,6 +755,52 @@ processors:
         - scrape_series_added
         - up
 
+  metricstransform/nginx-ingress:
+    transforms:
+    - include: nginx_ingress_controller_(ingress_upstream_latency_seconds|(request|response)_(size|duration_seconds))
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [ingress, namespace, service, job_name]
+        aggregation_type: sum
+
+  filter/nginx-ingress:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+        #- nginx_ingress_controller_bytes_sent
+        - nginx_ingress_controller_config_hash
+        #- nginx_ingress_controller_config_last_reload_successful
+        #- nginx_ingress_controller_config_last_reload_successful_timestamp_seconds
+        - nginx_ingress_controller_errors
+        - nginx_ingress_controller_ingress_upstream_latency_seconds
+        - nginx_ingress_controller_leader_election_status
+        - nginx_ingress_controller_nginx_process_connections
+        - nginx_ingress_controller_nginx_process_connections_total
+        - nginx_ingress_controller_nginx_process_cpu_seconds_total
+        - nginx_ingress_controller_nginx_process_num_procs
+        #- nginx_ingress_controller_nginx_process_oldest_start_time_seconds
+        - nginx_ingress_controller_nginx_process_read_bytes_total
+        - nginx_ingress_controller_nginx_process_requests_total
+        - nginx_ingress_controller_nginx_process_resident_memory_bytes
+        #- nginx_ingress_controller_nginx_process_virtual_memory_bytes
+        - nginx_ingress_controller_nginx_process_write_bytes_total
+        - nginx_ingress_controller_request_duration_seconds
+        - nginx_ingress_controller_request_size
+        - nginx_ingress_controller_requests
+        - nginx_ingress_controller_response_duration_seconds
+        - nginx_ingress_controller_response_size
+        - nginx_ingress_controller_ssl_expire_time_seconds
+        - nginx_ingress_controller_success
+        - process_resident_memory_bytes
+        - process_cpu_seconds_total
+        - scrape_duration_seconds
+        - scrape_samples_scraped
+        - scrape_series_added
+        - up
+
   filter/clickhouse:
     metrics:
       include:
@@ -915,7 +988,7 @@ service:
     - zpages
   pipelines:
     metrics:
-      receivers: [redis, prometheus/postgres, prometheus/internal]
+      receivers: [redis, prometheus/postgres, prometheus/otel-collector-metrics]
       processors: [memory_limiter, batch]
       exporters: [clickhousemetricswrite]
     metrics/cloudflare:
@@ -959,4 +1032,8 @@ service:
     metrics/kube-apiserver:
       receivers: [prometheus/kube-apiserver]
       processors: [memory_limiter, metricstransform/kube-apiserver, filter/kube-apiserver, batch]
+      exporters: [clickhousemetricswrite]
+    metrics/nginx-ingress:
+      receivers: [prometheus/nginx-ingress]
+      processors: [memory_limiter, metricstransform/nginx-ingress, filter/nginx-ingress, batch]
       exporters: [clickhousemetricswrite]
