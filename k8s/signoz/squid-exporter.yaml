@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: squid-exporter
-        image: boynux/squid-exporter:v1.10.4
+        image: boynux/squid-exporter:v1.12.0
         args: ["-squid-hostname", "squid.danbooru.svc.cluster.local", "-listen", ":9301"]
 
         ports:
