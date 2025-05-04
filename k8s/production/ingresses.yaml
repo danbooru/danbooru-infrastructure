@@ -167,9 +167,9 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: frontend
+                name: signoz
                 port:
-                  number: 3301
+                  number: 8080
 
   tls:
     - hosts:

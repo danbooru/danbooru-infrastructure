@@ -437,12 +437,10 @@
           Optional. If you don't use replicated tables, you could omit that.
          See https://clickhouse.com/docs/en/engines/table-engines/mergetree-family/replication/#creating-replicated-tables
       -->
-    <!--
     <macros>
         <shard>01</shard>
         <replica>example01-01-1</replica>
     </macros>
-    -->
 
 
     <!-- Reloading interval for embedded dictionaries, in seconds. Default: 3600. -->

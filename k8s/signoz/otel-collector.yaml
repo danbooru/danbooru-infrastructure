@@ -23,9 +23,13 @@ spec:
     spec:
       containers:
       - name: otel-collector
-        image: signoz/signoz-otel-collector:0.66.7
+        image: signoz/signoz-otel-collector:v0.111.40
         imagePullPolicy: Always
-        args: ["--config=/etc/otel-collector/config.yaml"]
+        args:
+        - "--config=/etc/otel-collector/config.yaml"
+        - "--manager-config=/etc/otel-collector/manager-config.yaml"
+        - "--copy-path=/var/tmp/collector-config.yaml"
+        - "--feature-gates=-pkg.translator.prometheus.NormalizeName"
 
         ports:
         - containerPort: 4317
@@ -38,8 +42,6 @@ spec:
         env:
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: "host.name=signoz-host,os.type=linux"
-        - name: DOCKER_MULTI_NODE_CLUSTER
-          value: "false"
         - name: LOW_CARDINAL_EXCEPTION_GROUPING
           value: "true"
 

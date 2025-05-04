@@ -163,9 +163,9 @@ patches:
     name: clickhouse
     namespace: signoz
     kind: StatefulSet
-- path: patches/query-service-signoz.yaml
+- path: patches/signoz-signoz.yaml
   target:
-    name: query-service
+    name: signoz
     namespace: signoz
     kind: StatefulSet
 - path: patches/alertmanager-signoz.yaml

@@ -1,49 +1,46 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: query-service
+  name: signoz
   namespace: signoz
   labels:
-    app: query-service
+    app: signoz
 
 spec:
   replicas: 1
-  serviceName: query-service
+  serviceName: signoz
+
   selector:
     matchLabels:
-      app: query-service
-
-  updateStrategy:
-    type: OnDelete
+      app: signoz
 
   template:
     metadata:
       labels:
-        app: query-service
+        app: signoz
 
     spec:
-      terminationGracePeriodSeconds: 90
-
       containers:
-      - name: query-service
-        image: signoz/query-service:0.18.1
+      - name: signoz
+        image: signoz/signoz:v0.81.0
         imagePullPolicy: Always
-        args: ["-config=/root/config/prometheus.yml"]
+        args: ["-config=/root/config/prometheus.yml", "--use-logs-new-schema=true", "--use-trace-new-schema=true"]
 
         ports:
         - containerPort: 8080
+        - containerPort: 4320
 
         envFrom:
         - configMapRef:
-            name: query-service-env
+            name: signoz-env
 
         volumeMounts:
-        - name: query-service-config
+        - name: signoz-config
           mountPath: /root/config
           readOnly: true
-        - name: query-service-data
+        - name: signoz-data
           mountPath: /var/lib/signoz
-        - name: query-service-dashboards
+        - name: signoz-dashboards
           mountPath: /root/config/dashboards
 
         readinessProbe:
@@ -65,28 +62,30 @@ spec:
           initialDelaySeconds: 3
 
       volumes:
-      - name: query-service-config
+      - name: signoz-config
         configMap:
-          name: query-service-config
-      # - name: query-service-data
+          name: signoz-config
+      # - name: signoz-data
       #   hostPath:
-      #     path: /srv/query-service-signoz
-      # - name: query-service-dashboards
+      #     path: /srv/signoz-signoz
+      # - name: signoz-dashboards
       #   hostPath:
-      #     path: /srv/query-service-dashboards
+      #     path: /srv/signoz-dashboards
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: query-service
+  name: signoz
   namespace: signoz
   labels:
-    app: query-service
+    app: signoz
 spec:
   selector:
-    app: query-service
+    app: signoz
   ports:
     - name: http
       port: 8080
+    - name: opamp-server
+      port: 4320

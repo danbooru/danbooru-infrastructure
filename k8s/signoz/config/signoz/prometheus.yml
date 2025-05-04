@@ -9,7 +9,7 @@ alerting:
   alertmanagers:
   - static_configs:
     - targets:
-      - alertmanager.signoz.svc.cluster.local:9093
+      - localhost:9093
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
@@ -22,4 +22,4 @@ rule_files:
 scrape_configs: []
 
 remote_read:
-  - url: tcp://clickhouse.signoz.svc.cluster.local:9000/?database=signoz_metrics
+  - url: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_metrics

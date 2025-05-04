@@ -26,7 +26,7 @@ spec:
 
       containers:
       - name: zookeeper
-        image: bitnami/zookeeper:3.7.0
+        image: bitnami/zookeeper:3.7.1
         imagePullPolicy: Always
 
         securityContext:

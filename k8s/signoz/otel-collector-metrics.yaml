@@ -25,9 +25,9 @@ spec:
 
       containers:
       - name: otel-collector-metrics
-        image: signoz/signoz-otel-collector:0.66.7
+        image: signoz/signoz-otel-collector:v0.111.40
         imagePullPolicy: Always
-        args: ["--config=/etc/otel-collector/config.yaml"]
+        args: ["--config=/etc/otel-collector/config.yaml", "--feature-gates=-pkg.translator.prometheus.NormalizeName"]
 
         ports:
         - containerPort: 8888

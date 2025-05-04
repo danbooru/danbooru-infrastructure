@@ -5,9 +5,7 @@ resources:
 - namespace.yaml
 - zookeeper.yaml
 - clickhouse.yaml
-- query-service.yaml
-- frontend.yaml
-- alertmanager.yaml
+- signoz.yaml
 - otel-collector.yaml
 - otel-collector-metrics.yaml
 - cloudflare-exporter.yaml
@@ -28,24 +26,20 @@ configMapGenerator:
   namespace: signoz
   env: config/zookeeper/zookeeper.env
 
-- name: query-service-config
+- name: signoz-config
   namespace: signoz
   files:
-  - config/query-service/prometheus.yml
+  - config/signoz/prometheus.yml
 
-- name: query-service-env
+- name: signoz-env
   namespace: signoz
-  env: config/query-service/query-service.env
-
-- name: frontend-config
-  namespace: signoz
-  files:
-  - config/frontend/default.conf
+  env: config/signoz/signoz.env
 
 - name: otel-collector-config
   namespace: signoz
   files:
   - config/otel-collector/config.yaml
+  - config/otel-collector/manager-config.yaml
 
 - name: otel-collector-metrics-config
   namespace: signoz

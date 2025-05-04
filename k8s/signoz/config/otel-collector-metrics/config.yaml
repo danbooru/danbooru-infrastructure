@@ -119,7 +119,7 @@ receivers:
         - target_label: __address__
           source_labels: [__address__]
           regex: "(.+):[0-9]+"
-          replacement: "$$1:10251"
+          replacement: "$$$1:10251"
         - target_label: job_name
           source_labels: [__meta_kubernetes_node_name]
           replacement: kube-scheduler-metrics
@@ -149,7 +149,7 @@ receivers:
         - target_label: __address__
           source_labels: [__address__]
           regex: "(.+):[0-9]+"
-          replacement: "$$1:10252"
+          replacement: "$$$1:10252"
         - target_label: job_name
           source_labels: [__meta_kubernetes_node_name]
           replacement: kube-controller-manager-metrics
@@ -180,7 +180,7 @@ receivers:
         - target_label: __address__
           source_labels: [__address__]
           regex: "(.+):[0-9]+"
-          replacement: "$$1:6443"
+          replacement: "$$$1:6443"
         - target_label: job_name
           source_labels: [__meta_kubernetes_node_name]
           replacement: kube-apiserver-metrics
@@ -238,7 +238,7 @@ receivers:
         - target_label: __address__
           source_labels: [__address__]
           regex: "(.+):[0-9]+"
-          replacement: "$$1:10254"
+          replacement: "$$$1:10254"
         - target_label: job_name
           source_labels: [__meta_kubernetes_node_name]
           replacement: nginx-ingress-metrics
@@ -973,14 +973,15 @@ extensions:
 
 exporters:
   clickhousemetricswrite:
-    endpoint: tcp://clickhouse.signoz.svc.cluster.local:9000/?database=signoz_metrics
+    endpoint: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_metrics
   prometheus/debug:
     endpoint: 0.0.0.0:9101
 
 service:
   telemetry:
-#    logs:
-#      level: debug
+    logs:
+      encoding: json
+      # level: DEBUG
     metrics:
       address: 0.0.0.0:8888
   extensions:
