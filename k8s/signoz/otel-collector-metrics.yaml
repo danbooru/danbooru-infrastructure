@@ -101,11 +101,27 @@ rules:
 - apiGroups: [""]
   verbs: [get, list, watch]
   resources:
+  - namespaces
   - nodes/metrics
+  - nodes/stats
+  - nodes/proxy
   - nodes
   - pods
   - endpoints
+  - replicationcontrollers
+  - resourcequotas
   - services
+- apiGroups: ["apps"]
+  verbs: [get, list, watch]
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+- apiGroups: ["batch"]
+  verbs: [get, list, watch]
+  resources:
+  - jobs
 
 ---
 

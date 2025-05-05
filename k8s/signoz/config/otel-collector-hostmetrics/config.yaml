@@ -1,0 +1,141 @@
+# Note that this runs on every node in the host network with the host filesystem mounted at /host.
+#
+# https://signoz.io/docs/userguide/hostmetrics/
+# https://opentelemetry.io/docs/collector/configuration/
+# https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md
+
+receivers:
+  hostmetrics:
+    collection_interval: 60s
+    root_path: /host
+    scrapers:
+      cpu:
+        metrics:
+          system.cpu.frequency: { enabled: true }
+          system.cpu.utilization: { enabled: true }
+      disk:
+        include:
+          devices: ["nvme[0-9]+n[0-9]+$", "sd[a-z]$"] # nvme0n1 or sda, not nvme0n1p1 or sda1
+          match_type: regexp
+      load: {}
+      filesystem:
+        metrics:
+          system.filesystem.utilization: { enabled: true }
+        include_virtual_filesystems: false
+        exclude_mount_points:
+          mount_points: ["/var/lib/.*", "/boot/.*", "/home/.*", "/etc/.*"]
+          match_type: regexp
+      memory:
+        metrics:
+          system.linux.memory.available: { enabled: true }
+          # system.linux.memory.dirty: { enabled: true }
+          system.memory.utilization: { enabled: true }
+      paging: {}
+      network:
+        include:
+          interfaces: ["en[a-z].*", "lo"]
+          match_type: regexp
+      processes: {}
+      # system: {}
+  kubeletstats:
+    collection_interval: 60s
+    endpoint: https://localhost:10250
+    insecure_skip_verify: true
+    auth_type: serviceAccount
+    node: "${env:K8S_NODE_NAME}"
+    k8s_api_config:
+      auth_type: serviceAccount
+    extra_metadata_labels:
+    - container.id
+    metrics:
+      container.cpu.usage: { enabled: true }
+      container.uptime: { enabled: true }
+      k8s.container.cpu_limit_utilization: { enabled: true }
+      k8s.container.cpu_request_utilization: { enabled: true }
+      k8s.container.memory_limit_utilization: { enabled: true }
+      k8s.container.memory_request_utilization: { enabled: true }
+      k8s.node.cpu.usage: { enabled: true }
+      k8s.node.uptime: { enabled: true }
+      k8s.pod.cpu.usage: { enabled: true }
+      k8s.pod.cpu_limit_utilization: { enabled: true }
+      k8s.pod.cpu_request_utilization: { enabled: true }
+      k8s.pod.memory_limit_utilization: { enabled: true }
+      k8s.pod.memory_request_utilization: { enabled: true }
+      k8s.pod.uptime: { enabled: true }
+      k8s.container.cpu.node.utilization: { enabled: true }
+      k8s.container.memory.node.utilization: { enabled: true }
+      k8s.pod.cpu.node.utilization: { enabled: true }
+      k8s.pod.memory.node.utilization: { enabled: true }
+
+processors:
+  resourcedetection:
+    detectors: [env, system]
+    system:
+      hostname_sources: [os]
+  k8sattributes:
+    extract:
+      metadata:
+      - k8s.namespace.name
+      - k8s.deployment.name
+      - k8s.statefulset.name
+      - k8s.daemonset.name
+      - k8s.cronjob.name
+      - k8s.job.name
+      - k8s.node.name
+      - k8s.node.uid
+      - k8s.pod.name
+      - k8s.pod.uid
+      - k8s.pod.start_time
+      - k8s.container.name
+    filter:
+      node_from_env_var: K8S_NODE_NAME
+    passthrough: false
+    pod_association:
+    - sources:
+      - from: resource_attribute
+        name: k8s.pod.ip
+    - sources:
+      - from: resource_attribute
+        name: k8s.pod.uid
+    - sources:
+      - from: connection
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+exporters:
+  otlp:
+    endpoint: otel-collector.signoz.svc.cluster.local:4317
+    tls:
+      insecure: true # XXX use mTLS (see autocert)
+  debug:
+    verbosity: basic # normal, detailed
+  prometheus/debug:
+    endpoint: 0.0.0.0:9101
+    resource_to_telemetry_conversion: { enabled: true }
+
+service:
+  telemetry:
+    logs:
+      encoding: json
+    # metrics:
+    #   level: normal
+    #   readers:
+    #     - periodic:
+    #       exporter:
+    #         otlp:
+    #           endpoint: otel-collector.signoz.svc.cluster.local:4317
+  extensions: [health_check, zpages]
+  pipelines:
+    metrics/hostmetrics:
+      receivers: [hostmetrics]
+      processors: [resourcedetection]
+      exporters: [otlp, debug]
+      # exporters: [debug, prometheus/debug]
+    metrics/kubelet:
+      receivers: [kubeletstats]
+      processors: [resourcedetection, k8sattributes]
+      exporters: [otlp, debug]

@@ -5,9 +5,19 @@ receivers:
     protocols:
       grpc:
       http:
+
   redis:
     endpoint: "redis-svc.danbooru.svc.cluster.local:6379"
     collection_interval: 60s
+
+  k8s_cluster:
+    collection_interval: 60s
+    node_conditions_to_report: [Ready, DiskPressure, MemoryPressure, PIDPressure, NetworkUnavailable]
+    allocatable_types_to_report: [cpu, memory, ephemeral-storage]
+    distribution: kubernetes
+    metrics:
+      k8s.node.condition: { enabled: true }
+      k8s.pod.status_reason: { enabled: true }
 
   prometheus/otel-collector-metrics:
     config:
@@ -285,6 +295,32 @@ processors:
     limit_mib: 2048 # 2GB
     spike_limit_mib: 512
     check_interval: 1s
+
+  k8sattributes:
+    extract:
+      metadata:
+      - k8s.namespace.name
+      - k8s.deployment.name
+      - k8s.statefulset.name
+      - k8s.daemonset.name
+      - k8s.cronjob.name
+      - k8s.job.name
+      - k8s.node.name
+      - k8s.node.uid
+      - k8s.pod.name
+      - k8s.pod.uid
+      - k8s.pod.start_time
+      - k8s.container.name
+    passthrough: false
+    pod_association:
+    - sources:
+      - from: resource_attribute
+        name: k8s.pod.ip
+    - sources:
+      - from: resource_attribute
+        name: k8s.pod.uid
+    - sources:
+      - from: connection
 
   # Drop `country` label from certain metrics and reaggregate samples.
   metricstransform/cloudflare:
@@ -988,6 +1024,10 @@ service:
     - health_check
     - zpages
   pipelines:
+    metrics/k8s_cluster:
+      receivers: [k8s_cluster]
+      processors: [k8sattributes]
+      exporters: [clickhousemetricswrite, debug]
     metrics:
       receivers: [redis, prometheus/postgres, prometheus/otel-collector-metrics]
       processors: [memory_limiter, batch]

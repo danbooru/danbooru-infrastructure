@@ -1,0 +1,103 @@
+# Scrapes host-based metrics and pushes them to otel-collector.
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: otel-collector-hostmetrics
+  namespace: signoz
+  labels:
+    app: otel-collector-hostmetrics
+
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 5
+
+  selector:
+    matchLabels:
+      app: otel-collector-hostmetrics
+
+  template:
+    metadata:
+      labels:
+        app: otel-collector-hostmetrics
+
+    spec:
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: otel-collector-metrics
+
+      containers:
+      - name: otel-collector-hostmetrics
+        image: signoz/signoz-otel-collector:v0.111.40
+        args: ["--config=/etc/otel-collector/config.yaml", "--feature-gates=-pkg.translator.prometheus.NormalizeName,receiver.kubeletstats.enableCPUUsageMetrics"]
+
+        ports:
+        - containerPort: 8888
+        - containerPort: 9101
+        - containerPort: 13133
+        - containerPort: 55679
+
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
+        volumeMounts:
+        - name: otel-collector-hostmetrics-config
+          mountPath: /etc/otel-collector
+          readOnly: true
+        - name: host-root
+          mountPath: /host
+          mountPropagation: HostToContainer
+          readOnly: true
+
+        readinessProbe:
+          httpGet:
+            path: "/"
+            port: 13133
+          periodSeconds: 3
+          timeoutSeconds: 3
+          failureThreshold: 5
+          initialDelaySeconds: 3
+
+        livenessProbe:
+          httpGet:
+            path: "/"
+            port: 13133
+          periodSeconds: 15
+          timeoutSeconds: 3
+          failureThreshold: 4
+          initialDelaySeconds: 3
+
+      volumes:
+      - name: otel-collector-hostmetrics-config
+        configMap:
+          name: otel-collector-hostmetrics-config
+      - name: host-root
+        hostPath:
+          path: /
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector-hostmetrics
+  namespace: signoz
+  labels:
+    app: otel-collector-hostmetrics
+spec:
+  selector:
+    app: otel-collector-hostmetrics
+  ports:
+    - name: internal-metrics
+      port: 8888
+    - name: prometheus-debug-metrics
+      port: 9101
+    - name: healthcheck
+      port: 13133
+    - name: zpages
+      port: 55679
