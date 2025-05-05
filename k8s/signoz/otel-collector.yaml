@@ -35,13 +35,10 @@ spec:
         - containerPort: 4317
         - containerPort: 4318
         - containerPort: 8888
-        - containerPort: 8889
         - containerPort: 13133
         - containerPort: 55679
 
         env:
-        - name: OTEL_RESOURCE_ATTRIBUTES
-          value: "host.name=signoz-host,os.type=linux"
         - name: LOW_CARDINAL_EXCEPTION_GROUPING
           value: "true"
 
@@ -92,8 +89,6 @@ spec:
       port: 4318
     - name: internal-metrics
       port: 8888
-    - name: signoz-spanmetrics
-      port: 8889
     - name: healthcheck
       port: 13133
     - name: zpages

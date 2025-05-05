@@ -1010,8 +1010,11 @@ extensions:
 exporters:
   clickhousemetricswrite:
     endpoint: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_metrics
+  debug:
+    verbosity: basic # normal, detailed
   prometheus/debug:
     endpoint: 0.0.0.0:9101
+    resource_to_telemetry_conversion: { enabled: true }
 
 service:
   telemetry:
@@ -1031,50 +1034,50 @@ service:
     metrics:
       receivers: [redis, prometheus/postgres, prometheus/otel-collector-metrics]
       processors: [memory_limiter, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
     metrics/cloudflare:
       receivers: [prometheus/cloudflare]
       processors: [memory_limiter, metricstransform/cloudflare, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
     metrics/node:
       receivers: [prometheus/node]
       processors: [memory_limiter, metricstransform/node, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
     metrics/clickhouse:
       receivers: [prometheus/clickhouse]
       processors: [memory_limiter, filter/clickhouse, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
     metrics/squid:
       receivers: [prometheus/squid]
       processors: [memory_limiter, filter/squid, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
     metrics/cert-manager:
       receivers: [prometheus/cert-manager]
       processors: [memory_limiter, filter/cert-manager, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
     metrics/kube-state-metrics:
       receivers: [prometheus/kube-state-metrics]
       processors: [memory_limiter, attributes/kube-state-metrics, metricstransform/kube-state-metrics, filter/kube-state-metrics, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
       #processors: [memory_limiter, batch]
       #exporters: [prometheus/debug]
     metrics/kubelet:
       receivers: [prometheus/kubelet]
       processors: [memory_limiter, filter/kubelet, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
     metrics/kube-scheduler:
       receivers: [prometheus/kube-scheduler]
       processors: [memory_limiter, metricstransform/kube-scheduler, filter/kube-scheduler, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
     metrics/kube-controller-manager:
       receivers: [prometheus/kube-controller-manager]
       processors: [memory_limiter, metricstransform/kube-controller-manager, filter/kube-controller-manager, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
     metrics/kube-apiserver:
       receivers: [prometheus/kube-apiserver]
       processors: [memory_limiter, metricstransform/kube-apiserver, filter/kube-apiserver, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
     metrics/nginx-ingress:
       receivers: [prometheus/nginx-ingress]
       processors: [memory_limiter, metricstransform/nginx-ingress, filter/nginx-ingress, batch]
-      exporters: [clickhousemetricswrite]
+      exporters: [clickhousemetricswrite, debug]
