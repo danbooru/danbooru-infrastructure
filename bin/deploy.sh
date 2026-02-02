@@ -2,8 +2,8 @@
 
 set -euxo pipefail
 
-#git tag -a -m "user deployed $(git rev-parse production) to production"
-#git push
+# git tag production-$(date -u +"%Y.%m.%d.%H%M%S-utc") -a -m "user deployed $(git rev-parse production) to production"
+# git push
 
 deploy() {
   kubectl rollout restart --context $CONTEXT deploy/"$@"
