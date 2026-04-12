@@ -256,6 +256,32 @@ receivers:
           regex: 'nginx_ingress_controller_(request|response)_(size|duration_seconds)_bucket;[0-9].*'
           action: drop
 
+  # curl -s http://danbooru.danbooru.svc.cluster.local:3000/metrics/instance
+  prometheus/danbooru-instance:
+    config:
+      scrape_configs:
+      - job_name: danbooru-instance-metrics
+        scrape_interval: 60s
+
+        kubernetes_sd_configs:
+        - role: pod
+
+        metrics_path: /metrics/instance
+
+        relabel_configs:
+        - action: keep
+          source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_pod_container_name, __meta_kubernetes_pod_label_app]
+          regex: danbooru;danbooru;(danbooru|betabooru|safebooru|danbooru-cron|danbooru-jobs)
+        - target_label: job_name
+          source_labels: [__meta_kubernetes_pod_name]
+          replacement: danbooru-instance-metrics
+        - target_label: pod
+          source_labels: [__meta_kubernetes_pod_name]
+        - target_label: node
+          source_labels: [__meta_kubernetes_pod_node_name]
+        - target_label: app
+          source_labels: [__meta_kubernetes_pod_label_app]
+
   # curl -sk http://172.16.0.x:9100/metrics
   prometheus/node:
     config:
@@ -833,6 +859,202 @@ processors:
         - scrape_series_added
         - up
 
+  metricstransform/danbooru-instance:
+    transforms:
+    - include: puma_thread_backlog|puma_socket_backlog|puma_restarts_total
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, app]
+        aggregation_type: sum
+
+    - include: puma_threads
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, app, state]
+        aggregation_type: sum
+
+    - include: rails_connection_pool_connections
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, app, state]
+        aggregation_type: max
+
+    - include: puma_max_threads|puma_workers|rails_connection_pool_size
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, app]
+        aggregation_type: max
+
+    - include: puma_exceptions_total
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node pod, app, exception]
+        aggregation_type: sum
+
+    - include: rails_connection_pool_waiting
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, app]
+        aggregation_type: sum
+
+    - include: rails_view_renders_total|rails_view_render_duration
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, template]
+        aggregation_type: sum
+
+    - include: rails_sql_query_duration_seconds|rails_sql_queries_total
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, type, statement]
+        aggregation_type: sum
+
+    - include: rails_active_record_instantiations_total
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, app, class]
+        aggregation_type: sum
+
+    - include: rails_cache_(operation_duration_seconds|operations_total|(read|write)_multi_keys_total|reads_total)
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, app, category, operation, hit]
+        aggregation_type: sum
+
+    - include: rails_exceptions_total
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, app, action, controller, exception, expected]
+        aggregation_type: sum
+
+    - include: rails_http_request_duration_seconds|rails_http_requests_total
+      match_type: regexp
+      action: update
+      operations:
+      - action: aggregate_labels
+        label_set: [job_name, node, pod, app, action, controller, method, format, status, duration]
+        aggregation_type: sum
+
+  filter/danbooru-instance:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+        - jemalloc_active_bytes
+        - jemalloc_allocated_bytes
+        - jemalloc_mapped_bytes
+        - jemalloc_metadata_bytes
+        - jemalloc_resident_bytes
+        #- jemalloc_thread_count
+        - puma_exceptions_total
+        - puma_http_requests_total
+        - puma_max_threads
+        - puma_restarts_total
+        - puma_socket_backlog
+        #- puma_started_at
+        - puma_thread_backlog
+        - puma_threads
+        - puma_workers
+        - rails_active_record_instantiations_total
+        - rails_cache_operation_duration_seconds
+        - rails_cache_operations_total
+        - rails_cache_read_multi_keys_total
+        - rails_cache_reads_total
+        - rails_cache_write_multi_keys_total
+        - rails_connection_pool_connections
+        #- rails_connection_pool_size
+        - rails_connection_pool_waiting
+        - rails_exceptions_total
+        - rails_http_request_duration_seconds
+        - rails_http_requests_total
+        - rails_jobs_attempts_total
+        - rails_jobs_duration_seconds
+        - rails_jobs_enqueue_duration_seconds
+        - rails_jobs_enqueued_total
+        - rails_jobs_exceptions_total
+        - rails_jobs_queue_duration_seconds
+        - rails_jobs_retries_total
+        - rails_jobs_worked_total
+        - rails_sql_queries_total
+        - rails_sql_query_duration_seconds
+        - rails_view_render_duration_seconds
+        - rails_view_renders_total
+        #- ruby_gc_compact_total
+        - ruby_gc_duration_seconds
+        - ruby_gc_heap_final_slots
+        - ruby_gc_heap_free_slots
+        - ruby_gc_heap_live_slots
+        - ruby_gc_heap_marked_slots
+        - ruby_gc_heap_pages
+        - ruby_gc_heap_pages_allocated_total
+        - ruby_gc_heap_pages_freed_total
+        - ruby_gc_malloc_increase_bytes
+        #- ruby_gc_malloc_increase_bytes_limit
+        #- ruby_gc_moved_objects_total
+        - ruby_gc_objects_allocated_total
+        - ruby_gc_objects_freed_total
+        - ruby_gc_old_objects
+        #- ruby_gc_old_objects_limit
+        - ruby_gc_oldmalloc_increase_bytes
+        #- ruby_gc_oldmalloc_increase_bytes_limit
+        - ruby_gc_pool_force_major_gc_count
+        - ruby_gc_pool_heap_pages
+        - ruby_gc_pool_heap_pages_allocated_total
+        - ruby_gc_pool_heap_pages_freed_total
+        - ruby_gc_pool_heap_slots
+        - ruby_gc_read_barrier_faults
+        - ruby_gc_remembered_wb_unprotected_objects
+        - ruby_gc_remembered_wb_unprotected_objects_limit
+        - ruby_gc_total
+        - ruby_objects_count
+        #- ruby_objects_imemo_count
+        - ruby_objects_size_bytes
+        - ruby_objects_symbols_count
+        #- ruby_objects_tdata_count
+        #- ruby_pid
+        - ruby_thread_count
+        - ruby_vm_constant_cache_invalidations
+        - ruby_vm_constant_cache_misses
+        - ruby_yjit_code_gc_count
+        - ruby_yjit_code_region_size
+        #- ruby_yjit_enabled
+        #- ruby_yjit_freed_code_size
+        - ruby_yjit_freed_page_count
+        #- ruby_yjit_inline_code_size
+        - ruby_yjit_live_page_count
+        - ruby_yjit_object_shape_count
+        #- ruby_yjit_outlined_code_size
+        - scrape_duration_seconds
+        - scrape_samples_scraped
+        - scrape_series_added
+        - target_info
+        - up
+        #- vips_allocations
+        #- vips_files
+        #- vips_memory_bytes
+
   filter/clickhouse:
     metrics:
       include:
@@ -1080,4 +1302,8 @@ service:
     metrics/nginx-ingress:
       receivers: [prometheus/nginx-ingress]
       processors: [memory_limiter, metricstransform/nginx-ingress, filter/nginx-ingress, batch]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
+    metrics/danbooru-instance:
+      receivers: [prometheus/danbooru-instance]
+      processors: [memory_limiter, metricstransform/danbooru-instance, filter/danbooru-instance, batch]
       exporters: [signozclickhousemetrics, metadataexporter, debug]
