@@ -88,7 +88,6 @@ resources:
 - ../betabooru
 - ../deepdanbooru
 - ../autotagger
-- ../elastic
 - ../opensmtpd
 - ../squid
 - ../signoz
@@ -98,7 +97,6 @@ resources:
 - prometheus.yaml
 - ingresses.yaml
 - local-storage.yaml
-- elasticsearch-data.yaml
 
 patches:
 - path: patches/danbooru.yaml
@@ -145,14 +143,6 @@ patches:
   target:
     name: opensmtpd
     kind: StatefulSet
-- path: patches/apm-server.yaml
-  target:
-    name: apm-server
-    kind: Agent
-- path: patches/kibana.yaml
-  target:
-    name: kibana
-    kind: Kibana
 - path: patches/zookeeper-signoz.yaml
   target:
     name: zookeeper
