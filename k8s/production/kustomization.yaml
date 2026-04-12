@@ -7,12 +7,6 @@ configMapGenerator:
   namespace: danbooru
   env: config/danbooru.env
 
-# The Prometheus config
-- name: prometheus-config
-  namespace: mgmt
-  files:
-  - config/prometheus/prometheus.yml
-
 # The OpenSMTPD config
 - name: opensmtpd-config
   namespace: danbooru
@@ -53,10 +47,6 @@ secretGenerator:
 - name: fumimi-secret-env
   namespace: danbooru
   env: secrets/fumimi.env
-
-- name: pgadmin-env
-  namespace: mgmt
-  env: secrets/pgadmin.env
 
 - name: squid-config
   namespace: danbooru
@@ -102,10 +92,7 @@ resources:
 - ../opensmtpd
 - ../squid
 - ../signoz
-- namespaces.yaml
 - service-accounts.yaml
-- pgadmin.yaml
-- prometheus.yaml
 - ingresses.yaml
 - local-storage.yaml
 - certificates.yaml
