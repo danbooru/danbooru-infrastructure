@@ -11,7 +11,14 @@ deploy() {
 }
 
 CONTEXT=${1:-danbooru-production}
+
 deploy downbooru
 deploy danbooru-cron
 deploy danbooru-jobs
+
+if [[ "$CONTEXT" = "danbooru-production" ]]; then
+  deploy devbooru
+  deploy safebooru
+fi
+
 deploy danbooru
