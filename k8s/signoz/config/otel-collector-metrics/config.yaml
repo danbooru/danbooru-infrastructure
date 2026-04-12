@@ -285,6 +285,19 @@ receivers:
           regex: 'nginx_ingress_controller_(request|response)_(size|duration_seconds)_bucket;[0-9].*'
           action: drop
 
+  # curl -s https://danbooru.donmai.us/metrics
+  prometheus/danbooru:
+    config:
+      scrape_configs:
+      - job_name: danbooru-metrics
+        scrape_interval: 60s
+        static_configs:
+        - targets:
+          - danbooru.donmai.us:443
+          labels:
+            job_name: danbooru-metrics
+        scheme: https
+
   # curl -s http://danbooru.danbooru.svc.cluster.local:3000/metrics/instance
   prometheus/danbooru-instance:
     config:
@@ -1414,6 +1427,10 @@ service:
     metrics/danbooru-instance:
       receivers: [prometheus/danbooru-instance]
       processors: [memory_limiter, metricstransform/danbooru-instance, filter/danbooru-instance, batch]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
+    metrics/danbooru:
+      receivers: [prometheus/danbooru]
+      processors: [memory_limiter, batch]
       exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/cadvisor-metrics:
       receivers: [prometheus/cadvisor]
