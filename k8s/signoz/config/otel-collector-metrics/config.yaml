@@ -64,7 +64,7 @@ receivers:
             job_name: postgres-metrics
         metric_relabel_configs:
         - source_labels: [__name__]
-          regex: "^go_.*|^promhttp_.*|^process_.*(max|fds).*|^pg_exporter.*|^pg_scrape.*|^postgres_exporter.*|^pg_stat_bgwriter_.*_total|^pg_database_size_bytes"
+          regex: "^go_.*|^promhttp_.*|^process_.*(max|fds).*|^pg_exporter.*|^pg_scrape.*|^postgres_exporter.*|^pg_stat_bgwriter_.*_total|^pg_roles_.*|^pg_stat_user_tables_.*(analyze|vacuum).*"
           action: drop
 
   prometheus/clickhouse:
@@ -198,6 +198,35 @@ receivers:
         - source_labels: [__name__, le]
           regex: '.*_bucket;[0-9].*'
           action: drop
+
+        scheme: https
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+
+  # curl -sk -H "Authorization: Bearer $TOKEN" https://172.16.0.x:10250/metrics/cadvisor
+  prometheus/cadvisor:
+    config:
+      scrape_configs:
+      - job_name: cadvisor-metrics
+        scrape_interval: 60s
+
+        metrics_path: /metrics/cadvisor
+
+        kubernetes_sd_configs:
+        - role: node
+
+        relabel_configs:
+        - target_label: __address__
+          source_labels: [__meta_kubernetes_node_address_InternalIP]
+          replacement: "$1:10250"
+        - target_label: job_name
+          source_labels: [__meta_kubernetes_node_name]
+          replacement: cadvisor-metrics
+        - target_label: node
+          source_labels: [__meta_kubernetes_node_name]
 
         scheme: https
         authorization:
@@ -532,6 +561,85 @@ processors:
            - scrape_samples_scraped
            - scrape_series_added
            - up
+
+  filter/cadvisor:
+    metrics:
+      include:
+        match_type: strict
+        metric_names:
+          - cadvisor_version_info                              # A metric with a constant '1' value labeled by kernel version, OS version, docker version, cadvisor version & cadvisor revision.                                                                                                    13:38:05 [17/5404]
+          # - container_cpu_cfs_periods_total                  # Number of elapsed enforcement period intervals.
+          # - container_cpu_cfs_throttled_periods_total        # Number of throttled period intervals.
+          # - container_cpu_cfs_throttled_seconds_total        # Total time duration the container has been throttled.
+          # - container_cpu_load_average_10s                   # Value of container cpu load average over the last 10 seconds.
+          # - container_cpu_system_seconds_total               # Cumulative system cpu time consumed in seconds.
+          - container_cpu_usage_seconds_total                  # Cumulative cpu time consumed in seconds.
+          # - container_cpu_user_seconds_total                 # Cumulative user cpu time consumed in seconds.
+          - container_file_descriptors                         # Number of open file descriptors for the container.
+          # - container_fs_inodes_free                         # Number of available Inodes
+          # - container_fs_inodes_total                        # Number of Inodes
+          - container_fs_io_current                            # Number of I/Os currently in progress
+          - container_fs_io_time_seconds_total                 # Cumulative count of seconds spent doing I/Os
+          # - container_fs_io_time_weighted_seconds_total      # Cumulative weighted I/O time in seconds
+          # - container_fs_limit_bytes                         # Number of bytes that can be consumed by the container on this filesystem.
+          - container_fs_read_seconds_total                    # Cumulative count of seconds spent reading
+          - container_fs_reads_bytes_total                     # Cumulative count of bytes read
+          # - container_fs_reads_merged_total                  # Cumulative count of reads merged
+          - container_fs_reads_total                           # Cumulative count of reads completed
+          # - container_fs_sector_reads_total                  # Cumulative count of sector reads completed
+          # - container_fs_sector_writes_total                 # Cumulative count of sector writes completed
+          - container_fs_usage_bytes                           # Number of bytes that are consumed by the container on this filesystem.
+          - container_fs_write_seconds_total                   # Cumulative count of seconds spent writing
+          - container_fs_writes_bytes_total                    # Cumulative count of bytes written
+          # - container_fs_writes_merged_total                 # Cumulative count of writes merged
+          - container_fs_writes_total                          # Cumulative count of writes completed
+          - container_last_seen                                # Last time a container was seen by the exporter
+          # - container_memory_cache                           # Number of bytes of page cache memory.
+          # - container_memory_failcnt_total                   # Number of memory usage hits limits
+          # - container_memory_failures_total                  # Cumulative count of memory allocation failures.
+          # - container_memory_mapped_file                     # Size of memory mapped files in bytes.
+          # - container_memory_max_usage_bytes                 # Maximum memory usage recorded in bytes
+          - container_memory_rss                               # Size of RSS in bytes.
+          # - container_memory_swap                            # Container swap usage in bytes.
+          - container_memory_usage_bytes                       # Current memory usage in bytes, including all memory regardless of when it was accessed
+          - container_memory_working_set_bytes                 # Current working set in bytes.
+          - container_network_receive_bytes_total              # Cumulative count of bytes received
+          # - container_network_receive_errors_total           # Cumulative count of errors encountered while receiving
+          # - container_network_receive_packets_dropped_total  # Cumulative count of packets dropped while receiving
+          - container_network_receive_packets_total            # Cumulative count of packets received
+          - container_network_transmit_bytes_total             # Cumulative count of bytes transmitted
+          # - container_network_transmit_errors_total          # Cumulative count of errors encountered while transmitting
+          # - container_network_transmit_packets_dropped_total # Cumulative count of packets dropped while transmitting
+          - container_network_transmit_packets_total           # Cumulative count of packets transmitted
+          - container_processes                                # Number of processes running inside the container.
+          # - container_scrape_error                           # 1 if there was an error while getting container metrics, 0 otherwise
+          - container_sockets                                  # Number of open sockets for the container.
+          # - container_spec_cpu_period                        # CPU period of the container.
+          # - container_spec_cpu_quota                         # CPU quota of the container.
+          # - container_spec_cpu_shares                        # CPU share of the container.
+          # - container_spec_memory_limit_bytes                # Memory limit for the container.
+          # - container_spec_memory_reservation_limit_bytes    # Memory reservation limit for the container.
+          # - container_spec_memory_swap_limit_bytes           # Memory swap limit for the container.
+          - container_start_time_seconds                       # Start time of the container since unix epoch in seconds.
+          # - container_tasks_state                            # Number of tasks in given state
+          - container_threads                                  # Number of threads running inside the container
+          # - container_threads_max                            # Maximum number of threads allowed inside the container, infinity if value is zero
+          # - container_ulimits_soft                           # Soft ulimit values for the container root process. Unlimited if -1, except priority and nice
+          - machine_cpu_cores                                  # Number of logical CPU cores.
+          # - machine_cpu_physical_cores                       # Number of physical CPU cores.
+          # - machine_cpu_sockets                              # Number of CPU sockets.
+          # - machine_dimm_capacity_bytes                      # Total RAM DIMM capacity (all types memory modules) value labeled by dimm type.
+          # - machine_dimm_count                               # Number of RAM DIMM (all types memory modules) value labeled by dimm type.
+          - machine_memory_bytes                               # Amount of memory installed on the machine.
+          # - machine_nvm_avg_power_budget_watts               # NVM power budget.
+          # - machine_nvm_capacity                             # NVM capacity value labeled by NVM mode (memory mode or app direct mode).
+          - machine_scrape_error                               # 1 if there was an error while getting machine metrics, 0 otherwise.
+          - scrape_duration_seconds                            # Duration of the scrape
+          # - scrape_samples_post_metric_relabeling            # The number of samples remaining after metric relabeling was applied
+          - scrape_samples_scraped                             # The number of samples the target exposed
+          - scrape_series_added                                # The approximate number of new series in this scrape
+          - target_info                                        # Target metadata
+          - up                                                 # The scraping was successful
 
   filter/cert-manager:
     metrics:
@@ -1306,4 +1414,8 @@ service:
     metrics/danbooru-instance:
       receivers: [prometheus/danbooru-instance]
       processors: [memory_limiter, metricstransform/danbooru-instance, filter/danbooru-instance, batch]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
+    metrics/cadvisor-metrics:
+      receivers: [prometheus/cadvisor]
+      processors: [memory_limiter, filter/cadvisor, batch]
       exporters: [signozclickhousemetrics, metadataexporter, debug]
