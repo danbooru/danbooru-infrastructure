@@ -67,6 +67,12 @@ receivers:
       k8s.pod.cpu.node.utilization: { enabled: true }
       k8s.pod.memory.node.utilization: { enabled: true }
 
+  journald:
+    root_path: /host
+    journalctl_path: /usr/bin/journalctl
+    directory: /run/log/journal
+    start_at: end
+
 processors:
   resourcedetection:
     detectors: [env, system]
@@ -101,6 +107,22 @@ processors:
     - sources:
       - from: connection
 
+  transform/journald:
+    error_mode: ignore
+    flatten_data: true
+    log_statements:
+    - context: log
+      statements:
+      # CONTAINER_NAME=k8s_nginx-ingress-controller_nginx-ingress-controller-2qfkf_ingress-nginx_4a9d17a2-2d8a-4e29-8b06-c1f2cf606741_303
+      - merge_maps(cache, ExtractPatterns(body["CONTAINER_NAME"], "k8s_(?P<deployment>[^_]+)_(?P<pod>[^_]+)_(?P<namespace>[^_]+)_(?P<uid>[^_]+)"), "upsert") where body["CONTAINER_NAME"] != nil
+      - set(resource.attributes["k8s.pod.uid"], cache["uid"])
+      - set(resource.attributes["container.id"], body["CONTAINER_ID_FULL"])
+      - merge_maps(attributes, body, "insert")
+      - keep_keys(attributes, ["_TRANSPORT", "_UID", "_GID", "_PID", "_SYSTEMD_SLICE", "_SYSTEMD_CGROUP", "_SYSTEMD_UNIT", "IMAGE_NAME", "CONTAINER_NAME", "_BOOT_ID", "_EXE", "_CMDLINE", "PRIORITY", "SYSLOG_FACILITY"])
+      # - replace_all_patterns(attributes, "key", "^_?", "systemd.", ToLowerCase)
+      - replace_all_patterns(attributes, "key", "^_?", "systemd.")
+      - set(body, body["MESSAGE"])
+
 extensions:
   health_check:
     endpoint: 0.0.0.0:13133
@@ -114,6 +136,8 @@ exporters:
       insecure: true # XXX use mTLS (see autocert)
   debug:
     verbosity: basic # normal, detailed
+  file/logs:
+    path: /tmp/log.txt
   prometheus/debug:
     endpoint: 0.0.0.0:9101
     resource_to_telemetry_conversion: { enabled: true }
@@ -140,3 +164,8 @@ service:
       receivers: [kubeletstats]
       processors: [resourcedetection, k8sattributes]
       exporters: [otlp, debug]
+    logs:
+      receivers: [journald]
+      processors: [resourcedetection, transform/journald, k8sattributes]
+      exporters: [otlp, debug]
+      # exporters: [file/logs]

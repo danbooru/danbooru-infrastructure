@@ -29,12 +29,9 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       serviceAccountName: otel-collector-metrics
 
-      securityContext:
-        supplementalGroups: [0, 101, 999] # XXX 101 = systemd-journal on ina|gura|ame, 999 = systemd-journal on fuwawa
-
       initContainers:
       - name: check-sync-migrations
-        image: ghcr.io/danbooru/signoz-otel-collector:v0.144.2
+        image: signoz/signoz-otel-collector:v0.144.2
         imagePullPolicy: Always
         command: ["/signoz-otel-collector"]
         args: ["migrate", "sync", "check"]
@@ -48,8 +45,15 @@ spec:
 
       containers:
       - name: otel-collector-hostmetrics
-        image: ghcr.io/danbooru/signoz-otel-collector:v0.144.2
+        image: signoz/signoz-otel-collector:v0.144.2
         args: ["--config=/etc/otel-collector/config.yaml", "--feature-gates=transform.flatten.logs"]
+        securityContext:
+          privileged: true # journald receiver needs ptrace, which is blocked by AppArmor, and setting the AppArmor profile to unconfined isn't supported in this version of Kubernetes, so use privileged mode as a workaround.
+          runAsUser: 0
+          # appArmorProfile:
+          #   type: Unconfined
+          capabilities:
+            add: ["DAC_READ_SEARCH", "SYS_PTRACE"]
 
         ports:
         - containerPort: 8888
