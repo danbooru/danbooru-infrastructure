@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: signoz-telemetrystore-migrator
+  namespace: signoz
+  labels:
+    app: signoz-telemetrystore-migrator
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: signoz-telemetrystore-migrator
+    spec:
+      initContainers:
+      - name: ready
+        image: signoz/signoz-otel-collector:v0.144.2
+        imagePullPolicy: Always
+        command: ["/signoz-otel-collector"]
+        args: ["migrate", "ready"]
+        env:
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_DSN
+          value: "tcp://clickhouse.signoz.svc.cluster.local:9000"
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_REPLICATION
+          value: "false"
+        - name: SIGNOZ_OTEL_COLLECTOR_TIMEOUT
+          value: "10m"
+      - name: bootstrap
+        image: signoz/signoz-otel-collector:v0.144.2
+        imagePullPolicy: Always
+        command: ["/signoz-otel-collector"]
+        args: ["migrate", "bootstrap"]
+        env:
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_DSN
+          value: "tcp://clickhouse.signoz.svc.cluster.local:9000"
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_REPLICATION
+          value: "false"
+        - name: SIGNOZ_OTEL_COLLECTOR_TIMEOUT
+          value: "10m"
+      - name: sync
+        image: signoz/signoz-otel-collector:v0.144.2
+        imagePullPolicy: Always
+        command: ["/signoz-otel-collector"]
+        args: ["migrate", "sync", "up"]
+        env:
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_DSN
+          value: "tcp://clickhouse.signoz.svc.cluster.local:9000"
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_REPLICATION
+          value: "false"
+        - name: SIGNOZ_OTEL_COLLECTOR_TIMEOUT
+          value: "10m"
+      containers:
+      - name: async
+        image: signoz/signoz-otel-collector:v0.144.2
+        imagePullPolicy: Always
+        command: ["/signoz-otel-collector"]
+        args: ["migrate", "async", "up"]
+        env:
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_DSN
+          value: "tcp://clickhouse.signoz.svc.cluster.local:9000"
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_REPLICATION
+          value: "false"
+        - name: SIGNOZ_OTEL_COLLECTOR_TIMEOUT
+          value: "10m"
+      restartPolicy: OnFailure

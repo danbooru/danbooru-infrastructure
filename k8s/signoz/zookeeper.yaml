@@ -26,8 +26,8 @@ spec:
 
       containers:
       - name: zookeeper
-        image: bitnami/zookeeper:3.7.1
-        imagePullPolicy: Always
+        image: signoz/zookeeper:3.7.1
+        imagePullPolicy: IfNotPresent
 
         securityContext:
           runAsUser: 0

@@ -6,6 +6,7 @@ resources:
 - zookeeper.yaml
 - clickhouse.yaml
 - signoz.yaml
+- telemetrystore-migrator.yaml
 - otel-collector.yaml
 - otel-collector-metrics.yaml
 - otel-collector-hostmetrics.yaml

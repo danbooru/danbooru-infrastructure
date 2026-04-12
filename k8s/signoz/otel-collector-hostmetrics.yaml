@@ -29,10 +29,27 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       serviceAccountName: otel-collector-metrics
 
+      securityContext:
+        supplementalGroups: [0, 101, 999] # XXX 101 = systemd-journal on ina|gura|ame, 999 = systemd-journal on fuwawa
+
+      initContainers:
+      - name: check-sync-migrations
+        image: ghcr.io/danbooru/signoz-otel-collector:v0.144.2
+        imagePullPolicy: Always
+        command: ["/signoz-otel-collector"]
+        args: ["migrate", "sync", "check"]
+        env:
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_DSN
+          value: "tcp://clickhouse.signoz.svc.cluster.local:9000"
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_REPLICATION
+          value: "false"
+        - name: SIGNOZ_OTEL_COLLECTOR_TIMEOUT
+          value: "10m"
+
       containers:
       - name: otel-collector-hostmetrics
-        image: signoz/signoz-otel-collector:v0.111.40
-        args: ["--config=/etc/otel-collector/config.yaml", "--feature-gates=-pkg.translator.prometheus.NormalizeName,receiver.kubeletstats.enableCPUUsageMetrics"]
+        image: ghcr.io/danbooru/signoz-otel-collector:v0.144.2
+        args: ["--config=/etc/otel-collector/config.yaml", "--feature-gates=transform.flatten.logs"]
 
         ports:
         - containerPort: 8888

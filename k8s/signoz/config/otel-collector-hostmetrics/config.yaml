@@ -72,6 +72,7 @@ processors:
     detectors: [env, system]
     system:
       hostname_sources: [os]
+
   k8sattributes:
     extract:
       metadata:

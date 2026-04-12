@@ -21,15 +21,28 @@ spec:
         app: otel-collector
 
     spec:
+      initContainers:
+      - name: check-sync-migrations
+        image: signoz/signoz-otel-collector:v0.144.2
+        imagePullPolicy: Always
+        command: ["/signoz-otel-collector"]
+        args: ["migrate", "sync", "check"]
+        env:
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_DSN
+          value: "tcp://clickhouse.signoz.svc.cluster.local:9000"
+        - name: SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_REPLICATION
+          value: "false"
+        - name: SIGNOZ_OTEL_COLLECTOR_TIMEOUT
+          value: "10m"
+
       containers:
       - name: otel-collector
-        image: signoz/signoz-otel-collector:v0.111.40
+        image: signoz/signoz-otel-collector:v0.144.2
         imagePullPolicy: Always
         args:
         - "--config=/etc/otel-collector/config.yaml"
         - "--manager-config=/etc/otel-collector/manager-config.yaml"
         - "--copy-path=/var/tmp/collector-config.yaml"
-        - "--feature-gates=-pkg.translator.prometheus.NormalizeName"
 
         ports:
         - containerPort: 4317

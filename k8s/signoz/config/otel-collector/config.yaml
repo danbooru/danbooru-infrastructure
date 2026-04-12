@@ -52,7 +52,7 @@ processors:
   #   queue_size: 100
   #   retry_on_failure: true
   signozspanmetrics/delta:
-    metrics_exporter: clickhousemetricswrite
+    metrics_exporter: signozclickhousemetrics
     metrics_flush_interval: 60s
     latency_histogram_buckets: [100us, 1ms, 2ms, 6ms, 10ms, 50ms, 100ms, 250ms, 500ms, 1000ms, 1400ms, 2000ms, 5s, 10s, 20s, 40s, 60s ]
     dimensions_cache_size: 100000
@@ -88,16 +88,18 @@ exporters:
     datasource: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_traces
     low_cardinal_exception_grouping: ${env:LOW_CARDINAL_EXCEPTION_GROUPING}
     use_new_schema: true
-  clickhousemetricswrite:
-    endpoint: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_metrics
-    resource_to_telemetry_conversion:
-      enabled: true
   signozclickhousemetrics:
     dsn: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_metrics
   clickhouselogsexporter:
     dsn: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_logs
     timeout: 10s
     use_new_schema: true
+  metadataexporter:
+    cache:
+      provider: in_memory
+    dsn: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_metadata
+    enabled: true
+    timeout: 45s
   debug:
     verbosity: basic # normal, detailed
 
@@ -105,8 +107,6 @@ service:
   telemetry:
     logs:
       encoding: json
-    metrics:
-      address: 0.0.0.0:8888
   extensions:
     - health_check
     - zpages
@@ -114,13 +114,13 @@ service:
     traces:
       receivers: [otlp]
       processors: [signozspanmetrics/delta, batch]
-      exporters: [clickhousetraces, debug]
+      exporters: [clickhousetraces, metadataexporter, debug]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [clickhousemetricswrite, signozclickhousemetrics, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     logs:
       # receivers: [otlp, filelog/dockercontainers]
       receivers: [otlp]
       processors: [batch]
-      exporters: [clickhouselogsexporter, debug]
+      exporters: [clickhouselogsexporter, metadataexporter, debug]

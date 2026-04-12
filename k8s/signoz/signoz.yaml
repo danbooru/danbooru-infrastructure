@@ -22,9 +22,9 @@ spec:
     spec:
       containers:
       - name: signoz
-        image: signoz/signoz:v0.81.0
+        image: signoz/signoz:v0.118.0
         imagePullPolicy: Always
-        args: ["-config=/root/config/prometheus.yml", "--use-logs-new-schema=true", "--use-trace-new-schema=true"]
+        args: ["-config=/root/config/prometheus.yml"]
 
         ports:
         - containerPort: 8080
@@ -33,6 +33,8 @@ spec:
         envFrom:
         - configMapRef:
             name: signoz-env
+        - secretRef:
+            name: signoz-secret-env
 
         volumeMounts:
         - name: signoz-config

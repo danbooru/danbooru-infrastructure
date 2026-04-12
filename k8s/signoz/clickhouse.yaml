@@ -26,8 +26,12 @@ spec:
 
       containers:
       - name: clickhouse
-        image: clickhouse/clickhouse-server:24.1.2-alpine
+        image: clickhouse/clickhouse-server:25.5.6
         imagePullPolicy: Always
+
+        env:
+        - name: CLICKHOUSE_SKIP_USER_SETUP
+          value: "1"
 
         ports:
         - containerPort: 8123

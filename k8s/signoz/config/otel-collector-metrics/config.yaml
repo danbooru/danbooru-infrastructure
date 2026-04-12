@@ -127,9 +127,8 @@ receivers:
           source_labels: [__meta_kubernetes_node_label_node_role_kubernetes_io_controlplane]
           regex: "true"
         - target_label: __address__
-          source_labels: [__address__]
-          regex: "(.+):[0-9]+"
-          replacement: "$$$1:10251"
+          source_labels: [__meta_kubernetes_node_address_InternalIP]
+          replacement: "$1:10252"
         - target_label: job_name
           source_labels: [__meta_kubernetes_node_name]
           replacement: kube-scheduler-metrics
@@ -157,9 +156,8 @@ receivers:
           source_labels: [__meta_kubernetes_node_label_node_role_kubernetes_io_controlplane]
           regex: "true"
         - target_label: __address__
-          source_labels: [__address__]
-          regex: "(.+):[0-9]+"
-          replacement: "$$$1:10252"
+          source_labels: [__meta_kubernetes_node_address_InternalIP]
+          replacement: "$1:10252"
         - target_label: job_name
           source_labels: [__meta_kubernetes_node_name]
           replacement: kube-controller-manager-metrics
@@ -188,9 +186,8 @@ receivers:
           source_labels: [__meta_kubernetes_node_label_node_role_kubernetes_io_controlplane]
           regex: "true"
         - target_label: __address__
-          source_labels: [__address__]
-          regex: "(.+):[0-9]+"
-          replacement: "$$$1:6443"
+          source_labels: [__meta_kubernetes_node_address_InternalIP]
+          replacement: "$1:6443"
         - target_label: job_name
           source_labels: [__meta_kubernetes_node_name]
           replacement: kube-apiserver-metrics
@@ -246,9 +243,8 @@ receivers:
         # Scrape control plane nodes on port 10254 (http://172.16.0.x:10254/metrics)
         relabel_configs:
         - target_label: __address__
-          source_labels: [__address__]
-          regex: "(.+):[0-9]+"
-          replacement: "$$$1:10254"
+          source_labels: [__meta_kubernetes_node_address_InternalIP]
+          replacement: "$1:10254"
         - target_label: job_name
           source_labels: [__meta_kubernetes_node_name]
           replacement: nginx-ingress-metrics
@@ -1008,8 +1004,14 @@ extensions:
     endpoint: 0.0.0.0:55679
 
 exporters:
-  clickhousemetricswrite:
-    endpoint: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_metrics
+  signozclickhousemetrics:
+    dsn: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_metrics
+  metadataexporter:
+    cache:
+      provider: in_memory
+    dsn: tcp://clickhouse.signoz.svc.cluster.local:9000/signoz_metadata
+    enabled: true
+    timeout: 45s
   debug:
     verbosity: basic # normal, detailed
   prometheus/debug:
@@ -1021,8 +1023,6 @@ service:
     logs:
       encoding: json
       # level: DEBUG
-    metrics:
-      address: 0.0.0.0:8888
   extensions:
     - health_check
     - zpages
@@ -1030,54 +1030,54 @@ service:
     metrics/k8s_cluster:
       receivers: [k8s_cluster]
       processors: [k8sattributes]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics:
       receivers: [redis, prometheus/postgres, prometheus/otel-collector-metrics]
       processors: [memory_limiter, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/cloudflare:
       receivers: [prometheus/cloudflare]
       processors: [memory_limiter, metricstransform/cloudflare, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/node:
       receivers: [prometheus/node]
       processors: [memory_limiter, metricstransform/node, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/clickhouse:
       receivers: [prometheus/clickhouse]
       processors: [memory_limiter, filter/clickhouse, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/squid:
       receivers: [prometheus/squid]
       processors: [memory_limiter, filter/squid, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/cert-manager:
       receivers: [prometheus/cert-manager]
       processors: [memory_limiter, filter/cert-manager, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/kube-state-metrics:
       receivers: [prometheus/kube-state-metrics]
       processors: [memory_limiter, attributes/kube-state-metrics, metricstransform/kube-state-metrics, filter/kube-state-metrics, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
       #processors: [memory_limiter, batch]
       #exporters: [prometheus/debug]
     metrics/kubelet:
       receivers: [prometheus/kubelet]
       processors: [memory_limiter, filter/kubelet, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/kube-scheduler:
       receivers: [prometheus/kube-scheduler]
       processors: [memory_limiter, metricstransform/kube-scheduler, filter/kube-scheduler, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/kube-controller-manager:
       receivers: [prometheus/kube-controller-manager]
       processors: [memory_limiter, metricstransform/kube-controller-manager, filter/kube-controller-manager, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/kube-apiserver:
       receivers: [prometheus/kube-apiserver]
       processors: [memory_limiter, metricstransform/kube-apiserver, filter/kube-apiserver, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
     metrics/nginx-ingress:
       receivers: [prometheus/nginx-ingress]
       processors: [memory_limiter, metricstransform/nginx-ingress, filter/nginx-ingress, batch]
-      exporters: [clickhousemetricswrite, debug]
+      exporters: [signozclickhousemetrics, metadataexporter, debug]
