@@ -34,6 +34,13 @@ secretGenerator:
   - secrets/betabooru/danbooru_local_config.rb
   - secrets/id_rsa
 
+# The danbooru_local_config.rb for donmai.moe
+- name: safebooru-local-config
+  namespace: danbooru
+  files:
+  - secrets/safebooru/danbooru_local_config.rb
+  - secrets/id_rsa
+
 # The danbooru.donmai.us and betabooru.donmai.us secret .env config
 - name: danbooru-secret-env
   namespace: danbooru
@@ -90,6 +97,7 @@ resources:
 - ../danbooru
 - ../downbooru
 - ../betabooru
+- ../safebooru
 - ../deepdanbooru
 - ../autotagger
 - ../opensmtpd
@@ -101,6 +109,7 @@ resources:
 - prometheus.yaml
 - ingresses.yaml
 - local-storage.yaml
+- certificates.yaml
 
 patches:
 - path: patches/danbooru.yaml

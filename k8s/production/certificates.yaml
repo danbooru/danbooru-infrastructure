@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: donmai-moe
+  namespace: danbooru
+spec:
+  secretName: donmai-moe-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  dnsNames:
+  - "*.donmai.moe"
+  - "donmai.moe"
