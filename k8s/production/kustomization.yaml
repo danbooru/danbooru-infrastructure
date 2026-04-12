@@ -98,7 +98,6 @@ resources:
 - ../downbooru
 - ../betabooru
 - ../safebooru
-- ../deepdanbooru
 - ../autotagger
 - ../opensmtpd
 - ../squid
