@@ -19,11 +19,12 @@ spec:
     spec:
       containers:
       - name: postgres-exporter
-        image: quay.io/prometheuscommunity/postgres-exporter:v0.12.0
+        image: quay.io/prometheuscommunity/postgres-exporter:v0.19.1
         args:
-        - --disable-default-metrics
         - --disable-settings-metrics
-        - --extend.query-path=/etc/postgres-exporter/queries.yaml
+        - --collector.postmaster
+        - --collector.statio_user_indexes
+        - --collector.long_running_transactions
 
         ports:
         - containerPort: 9187

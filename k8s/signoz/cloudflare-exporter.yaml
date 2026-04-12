@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: cloudflare-exporter
-        image: ghcr.io/lablabs/cloudflare_exporter:0.0.14
+        image: ghcr.io/lablabs/cloudflare_exporter:0.0.16
         imagePullPolicy: Always
 
         ports:

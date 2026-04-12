@@ -23,7 +23,7 @@ spec:
 
       containers:
       - name: kube-state-metrics
-        image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.8.1
+        image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.18.0
         imagePullPolicy: Always
 
         # XXX not supported in k8s 1.20: cronjobs, poddisruptionbudgets, horizontalpodautoscalers
