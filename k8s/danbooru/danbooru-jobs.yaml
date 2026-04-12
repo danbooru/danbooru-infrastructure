@@ -25,12 +25,15 @@ spec:
         image: ghcr.io/danbooru/danbooru:production
         imagePullPolicy: Always
 
-        args: ["bin/good_job", "start", "--poll-interval=60", "--max-threads=4", "--probe-port=3000"]
+        args: ["bin/good_job", "start", "--poll-interval=60", "--max-threads=4"]
+
+        ports:
+        - containerPort: 3000
+          name: danbooru
 
         env:
-        # https://docs.newrelic.com/docs/agents/ruby-agent/background-jobs/delayedjob-instrumentation/
-        - name: NEW_RELIC_DISPATCHER
-          value: delayed_job
+        - name: DANBOORU_METRICS_PORT
+          value: "3000"
 
         envFrom:
         - configMapRef:
@@ -47,3 +50,18 @@ spec:
       - name: danbooru-local-config
         secret:
           secretName: danbooru-local-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: danbooru-jobs
+  namespace: danbooru
+spec:
+  selector:
+    app: danbooru-jobs
+  ports:
+    - port: 3000
+      targetPort: 3000
+      name: danbooru

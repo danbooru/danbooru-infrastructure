@@ -29,6 +29,14 @@ spec:
 
         args: ["bin/rails", "danbooru:cron"]
 
+        ports:
+        - containerPort: 3000
+          name: danbooru
+
+        env:
+        - name: DANBOORU_METRICS_PORT
+          value: "3000"
+
         envFrom:
         - configMapRef:
             name: danbooru-config-env
@@ -44,3 +52,18 @@ spec:
       - name: danbooru-local-config
         secret:
           secretName: danbooru-local-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: danbooru-cron
+  namespace: danbooru
+spec:
+  selector:
+    app: danbooru-cron
+  ports:
+    - port: 3000
+      targetPort: 3000
+      name: danbooru

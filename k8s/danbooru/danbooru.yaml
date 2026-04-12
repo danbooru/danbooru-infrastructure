@@ -41,6 +41,7 @@ spec:
 
         ports:
         - containerPort: 3000
+          name: danbooru
 
         env:
         - name: K8S_NODE_NAME
@@ -149,3 +150,7 @@ spec:
   ports:
     - port: 80
       targetPort: 8080
+      name: openresty
+    - port: 3000
+      targetPort: 3000
+      name: danbooru
