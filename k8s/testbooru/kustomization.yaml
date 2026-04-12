@@ -12,12 +12,8 @@ resources:
 - ../danbooru
 - ../danbooru-images
 - ../squid
-- ../deepdanbooru
-- ../elastic
-#- ../recommender
+- ../autotagger
 - ingress.yaml
-- elasticsearch-data.yaml
-- local-storage.yaml
 
 configMapGenerator:
 - name: danbooru-config-env
