@@ -1,9 +1,3 @@
-group_vars
 secrets
-k8s/secrets
-templates/danbooru/env.production
-templates/danbooru/danbooru_local_config.rb
-templates/danbooru/database.yml
-templates/reportbooru/env.j2
 terraform/.terraform
 testbooru/.vagrant
