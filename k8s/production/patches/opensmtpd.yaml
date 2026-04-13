@@ -5,7 +5,7 @@ metadata:
 spec:
   template:
     spec:
-      nodeName: kiara
+      nodeName: mori
 
       volumes:
       - name: opensmtpd-data

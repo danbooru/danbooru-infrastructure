@@ -14,7 +14,7 @@ spec:
       app: opensmtpd
 
   updateStrategy:
-    type: OnDelete
+    type: RollingUpdate
 
   template:
     metadata:
@@ -22,24 +22,30 @@ spec:
         app: opensmtpd
 
     spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       terminationGracePeriodSeconds: 90
 
       containers:
       - name: opensmtpd
-        image: ghcr.io/danbooru/opensmtpd:latest
+        image: wodby/opensmtpd:7.8
         imagePullPolicy: Always
-        args: ["smtpd", "-d", "-f", "/etc/opensmtpd/smtpd.conf"]
+        args: ["smtpd", "-v", "-d", "-f", "/etc/opensmtpd/smtpd.conf"]
 
         ports:
         - containerPort: 587
+        - containerPort: 465
         - containerPort: 25
 
         volumeMounts:
         - name: opensmtpd-config
           mountPath: /etc/opensmtpd
           readOnly: true
+        - name: opensmtpd-certificate
+          mountPath: /etc/opensmtpd/certificates
+          readOnly: true
         - name: opensmtpd-data
-          mountPath: /var/lib/opensmtpd
+          mountPath: /srv/opensmtpd
           mountPropagation: HostToContainer
 
         readinessProbe:
@@ -54,6 +60,10 @@ spec:
       - name: opensmtpd-config
         configMap:
           name: opensmtpd-config
+      - name: opensmtpd-certificate
+        secret:
+          secretName: donmai-us-tls
+          defaultMode: 384 # 0600
 
 ---
 
@@ -68,7 +78,9 @@ spec:
   selector:
     app: opensmtpd
   ports:
-    - port: 25
-      targetPort: 25
-    - port: 587
-      targetPort: 587
+    - name: smtp
+      port: 25
+    - name: smtps
+      port: 465
+    - name: smtp-tls
+      port: 587
