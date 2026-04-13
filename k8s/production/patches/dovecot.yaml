@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dovecot
+spec:
+  template:
+    spec:
+      nodeName: mori
+
+      volumes:
+      - name: dovecot-data
+        hostPath:
+          path: /srv/opensmtpd

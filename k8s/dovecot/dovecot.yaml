@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dovecot
+  namespace: danbooru
+  labels:
+    app: dovecot
+
+spec:
+  replicas: 1
+  serviceName: dovecot
+  selector:
+    matchLabels:
+      app: dovecot
+
+  updateStrategy:
+    type: RollingUpdate
+
+  template:
+    metadata:
+      labels:
+        app: dovecot
+
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      terminationGracePeriodSeconds: 90
+
+      containers:
+      - name: dovecot
+        image: dovecot/dovecot:2.3.21.1
+        imagePullPolicy: Always
+        args: ["dovecot", "-F", "-c", "/etc/dovecot/dovecot.conf"]
+
+        ports:
+        - containerPort: 993
+
+        volumeMounts:
+        - name: dovecot-config
+          mountPath: /etc/dovecot
+          readOnly: true
+        - name: dovecot-certificate
+          mountPath: /etc/dovecot/private
+          readOnly: true
+        - name: dovecot-passdb
+          mountPath: /etc/dovecot/conf.d
+          readOnly: true
+        - name: dovecot-data
+          mountPath: /srv/opensmtpd
+          mountPropagation: HostToContainer
+
+        readinessProbe:
+          exec:
+            command: ["doveadm", "service", "status"]
+          periodSeconds: 15
+          timeoutSeconds: 3
+          failureThreshold: 2
+          initialDelaySeconds: 3
+
+      volumes:
+      - name: dovecot-config
+        configMap:
+          name: dovecot-config
+      - name: dovecot-certificate
+        secret:
+          secretName: donmai-us-tls
+      - name: dovecot-passdb
+        secret:
+          secretName: dovecot-passdb
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: dovecot
+  namespace: danbooru
+  labels:
+    app: dovecot
+spec:
+  selector:
+    app: dovecot
+  ports:
+    - name: imaps
+      port: 993

@@ -13,6 +13,11 @@ configMapGenerator:
   files:
   - config/opensmtpd/smtpd.conf
 
+- name: dovecot-config
+  namespace: danbooru
+  files:
+  - config/dovecot/dovecot.conf
+
 secretGenerator:
 # The danbooru_local_config.rb for danbooru.donmai.us
 - name: danbooru-local-config
@@ -54,6 +59,11 @@ secretGenerator:
   - secrets/squid/passwd
   - secrets/squid/squid.conf
 
+- name: dovecot-passdb
+  namespace: danbooru
+  files:
+  - secrets/dovecot/passdb.conf
+
 - name: otel-collector-metrics-secret-env
   namespace: signoz
   env: secrets/signoz/otel-collector-metrics.env
@@ -92,6 +102,7 @@ resources:
 - ../opensmtpd
 - ../squid
 - ../signoz
+- ../dovecot
 - service-accounts.yaml
 - ingresses.yaml
 - local-storage.yaml
@@ -141,6 +152,10 @@ patches:
 - path: patches/opensmtpd.yaml
   target:
     name: opensmtpd
+    kind: StatefulSet
+- path: patches/dovecot.yaml
+  target:
+    name: dovecot
     kind: StatefulSet
 - path: patches/zookeeper-signoz.yaml
   target:
