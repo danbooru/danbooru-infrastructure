@@ -28,12 +28,13 @@ spec:
 
       containers:
       - name: dovecot
-        image: dovecot/dovecot:2.3.21.1
+        image: dovecot/dovecot:2.4.3-root # XXX switch to rootless image eventually
         imagePullPolicy: Always
         args: ["dovecot", "-F", "-c", "/etc/dovecot/dovecot.conf"]
 
         ports:
         - containerPort: 993
+        # - containerPort: 9900
 
         volumeMounts:
         - name: dovecot-config
@@ -82,3 +83,5 @@ spec:
   ports:
     - name: imaps
       port: 993
+    # - name: metrics
+    #   port: 9900
