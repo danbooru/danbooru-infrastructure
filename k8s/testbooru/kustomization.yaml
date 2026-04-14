@@ -14,6 +14,8 @@ resources:
 - ../squid
 - ../autotagger
 - ingress.yaml
+- cluster-roles.yaml
+- service-accounts.yaml
 
 configMapGenerator:
 - name: danbooru-config-env

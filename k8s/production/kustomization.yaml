@@ -107,6 +107,7 @@ resources:
 - ingresses.yaml
 - local-storage.yaml
 - certificates.yaml
+- user-roles.yaml
 
 patches:
 - path: patches/danbooru.yaml

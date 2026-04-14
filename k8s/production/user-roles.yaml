@@ -1,0 +1,40 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: nonamethanks
+subjects:
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: nonamethanks
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: danbooru-deployer
+  namespace: danbooru
+rules:
+- apiGroups: ["apps", "extensions"]
+  resources: ["deployments"]
+  verbs: ["get", "patch"]
+
+---
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: danbooru-deployers
+  namespace: danbooru
+subjects:
+- kind: User
+  name: nonamethanks
+  namespace: danbooru
+roleRef:
+  kind: Role
+  name: danbooru-deployer
+  apiGroup: rbac.authorization.k8s.io
