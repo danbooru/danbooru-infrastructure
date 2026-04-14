@@ -86,7 +86,6 @@ secretGenerator:
 
 resources:
 - ../cert-manager
-- ../kubernetes-dashboard
 - ../ingress-nginx
 - ../redis
 - ../iqdb
