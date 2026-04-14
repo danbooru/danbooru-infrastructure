@@ -157,6 +157,11 @@ patches:
   target:
     name: dovecot
     kind: StatefulSet
+- path: patches/autotagger.yaml
+  target:
+    name: autotagger
+    namespace: danbooru
+    kind: Deployment
 - path: patches/zookeeper-signoz.yaml
   target:
     name: zookeeper
