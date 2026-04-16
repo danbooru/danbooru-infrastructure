@@ -1,172 +1,197 @@
 # https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/zone
 # cf-terraforming -z $CLOUDFLARE_ZONE_ID -e $CLOUDFLARE_EMAIL -k $CLOUDFLARE_KEY zone
 resource "cloudflare_zone" "donmai_moe" {
-  account_id = var.cloudflare_account_id
-  zone   = "donmai.moe"
+  account = {
+    id = var.cloudflare_account_id
+  }
+  name   = "donmai.moe"
   paused = false
-  plan   = "free"
-  type   = "full"
 }
 
-# https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/zone_settings_override
-# cf-terraforming -z $CLOUDFLARE_ZONE_ID -e $CLOUDFLARE_EMAIL -k $CLOUDFLARE_KEY zone_settings_override
-resource "cloudflare_zone_settings_override" "donmai_moe" {
-  zone_id = cloudflare_zone.donmai_moe.id
+resource "cloudflare_zone_setting" "donmai_moe_always_online" {
+  setting_id = "always_online"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
 
-  settings {
-    #
-    # https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/donmai.us/caching/configuration
-    #
+resource "cloudflare_zone_setting" "donmai_moe_browser_cache_ttl" {
+  setting_id = "browser_cache_ttl"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = 0
+}
 
-    # https://support.cloudflare.com/hc/en-us/articles/200168436-Understanding-Cloudflare-Always-Online
-    always_online = "off"
+resource "cloudflare_zone_setting" "donmai_moe_cache_level" {
+  setting_id = "cache_level"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "aggressive"
+}
 
-    # https://support.cloudflare.com/hc/en-us/articles/200168276-Understanding-Browser-Cache-TTL
-    # 0 = "Respect existing headers"
-    browser_cache_ttl = 0
+resource "cloudflare_zone_setting" "donmai_moe_development_mode" {
+  setting_id = "development_mode"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
 
-    # https://support.cloudflare.com/hc/en-us/articles/200168256-Understand-Cloudflare-Caching-Level
-    # aggressive = "Delivers a different resource each time the query string changes."
-    cache_level = "aggressive"
+resource "cloudflare_zone_setting" "donmai_moe_always_use_https" {
+  setting_id = "always_use_https"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
 
-    # https://support.cloudflare.com/hc/en-us/articles/200168246-Understanding-Cloudflare-Development-Mode
-    development_mode = "off"
+resource "cloudflare_zone_setting" "donmai_moe_automatic_https_rewrites" {
+  setting_id = "automatic_https_rewrites"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
 
-    #
-    # https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/donmai.us/ssl-tls
-    #
+resource "cloudflare_zone_setting" "donmai_moe_min_tls_version" {
+  setting_id = "min_tls_version"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "1.2"
+}
 
-    # https://support.cloudflare.com/hc/en-us/articles/204144518-SSL-FAQ#h_a61bfdef-08dd-40f8-8888-7edd8e40d156
-    always_use_https = "off"
+resource "cloudflare_zone_setting" "donmai_moe_opportunistic_encryption" {
+  setting_id = "opportunistic_encryption"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "on"
+}
 
-    # https://support.cloudflare.com/hc/en-us/articles/227227647-How-do-I-use-Automatic-HTTPS-Rewrites-
-    automatic_https_rewrites = "off"
-
-    min_tls_version = "1.2"
-
-    # https://support.cloudflare.com/hc/en-us/articles/227253688-Understanding-Opportunistic-Encryption
-    opportunistic_encryption = "on"
-
-    # https://support.cloudflare.com/hc/en-us/articles/204183088-Understanding-HSTS-HTTP-Strict-Transport-Security-
-    # HSTS header
-    security_header {
+resource "cloudflare_zone_setting" "donmai_moe_security_header" {
+  setting_id = "security_header"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value = {
+    strict_transport_security = {
       enabled            = false
       include_subdomains = false
       max_age            = 0
       nosniff            = false
       preload            = false
     }
-
-    # https://support.cloudflare.com/hc/en-us/articles/200170416
-    ssl = "full"
-
-    tls_1_3 = "zrt"
-
-    # https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/donmai.us/ssl-tls/client-certificates
-    # https://developers.cloudflare.com/ssl/client-certificates
-    tls_client_auth = "off"
-
-    #
-    # https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/donmai.us/speed/optimization
-    #
-
-    # https://support.cloudflare.com/hc/en-us/articles/200168396
-    brotli = "on"
-
-    # https://support.cloudflare.com/hc/en-us/articles/219178057-Configuring-Cloudflare-Mirage
-    #mirage = "off"
-
-    # https://support.cloudflare.com/hc/en-us/articles/360000607372-Using-Cloudflare-Polish-to-compress-images
-    #polish = "off"
-    #webp   = "off"
-
-    # https://support.cloudflare.com/hc/en-us/articles/206776707
-    #prefetch_preload = "off"
-
-    # https://support.cloudflare.com/hc/en-us/articles/200168056-What-does-Rocket-Loader-do-
-    rocket_loader = "off"
-
-    #
-    # https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/donmai.us/firewall/settings
-    #
-
-    # https://support.cloudflare.com/hc/en-us/articles/200170086-Understanding-the-Cloudflare-Browser-Integrity-Check
-    browser_check = "off"
-
-    # https://support.cloudflare.com/hc/en-us/articles/200170136-Understanding-Cloudflare-Challenge-Passage-Captcha-
-    # Applies to firewall rules and IP access rules, not WAF rules.
-    challenge_ttl = 86400 # 1 day
-
-    # https://support.cloudflare.com/hc/en-us/articles/115001992652
-    privacy_pass = "on"
-
-    # https://support.cloudflare.com/hc/en-us/articles/200170056-Understanding-the-Cloudflare-Security-Level
-    # Low: Challenges only the most threatening visitors
-    security_level = "under_attack"
-
-    # https://support.cloudflare.com/hc/en-us/articles/200172016-Understanding-the-Cloudflare-Web-Application-Firewall-WAF-
-    #waf = "on"
-
-    #
-    # https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/donmai.us/dns
-    #
-
-    # https://blog.cloudflare.com/introducing-cname-flattening-rfc-compliant-cnames-at-a-domains-root/
-    # cname_flattening = "flatten_at_root"
-
-    #
-    # https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/donmai.us/network
-    #
-
-    # https://www.cloudflare.com/website-optimization/http2/what-is-http2/
-    #http2 = "on"
-
-    # https://developers.cloudflare.com/http3/
-    http3 = "on"
-
-    # https://support.cloudflare.com/hc/en-us/articles/200172516#h_51422705-42d0-450d-8eb1-5321dcadb5bc
-    # 100mb max upload size (100mb is the max on the Pro plan).
-    max_upload = 100 # megabytes
-
-    # https://support.cloudflare.com/hc/en-us/articles/203306930-Understanding-Cloudflare-Tor-support-and-Onion-Routing
-    opportunistic_onion = "on"
-
-    # https://support.cloudflare.com/hc/en-us/articles/229666767-Understanding-and-configuring-Cloudflare-s-IPv6-support#h_877db671-916a-4085-9676-8eb27eaa2a91
-    pseudo_ipv4 = "off"
-
-    # https://www.cloudflare.com/website-optimization/web-sockets/
-    websockets = "on"
-
-    # https://blog.cloudflare.com/introducing-0-rtt/
-    zero_rtt = "on"
-
-    #
-    # https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/donmai.us/content-protection
-    #
-
-    # https://support.cloudflare.com/hc/en-us/articles/200170016-What-is-Email-Address-Obfuscation-
-    email_obfuscation = "off"
-
-    # https://support.cloudflare.com/hc/en-us/articles/200170026-Understanding-Cloudflare-Hotlink-Protection
-    hotlink_protection = "off"
-
-    # https://support.cloudflare.com/hc/en-us/articles/200170036-What-does-Server-Side-Excludes-SSE-do-
-    server_side_exclude = "off"
   }
 }
 
-resource "cloudflare_record" "donmai_moe" {
+resource "cloudflare_zone_setting" "donmai_moe_ssl" {
+  setting_id = "ssl"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "full"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_tls_1_3" {
+  setting_id = "tls_1_3"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "zrt"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_tls_client_auth" {
+  setting_id = "tls_client_auth"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_brotli" {
+  setting_id = "brotli"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "on"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_rocket_loader" {
+  setting_id = "rocket_loader"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_browser_check" {
+  setting_id = "browser_check"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_challenge_ttl" {
+  setting_id = "challenge_ttl"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = 86400
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_privacy_pass" {
+  setting_id = "privacy_pass"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "on"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_security_level" {
+  setting_id = "security_level"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "under_attack"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_http3" {
+  setting_id = "http3"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "on"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_max_upload" {
+  setting_id = "max_upload"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = 100
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_opportunistic_onion" {
+  setting_id = "opportunistic_onion"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "on"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_pseudo_ipv4" {
+  setting_id = "pseudo_ipv4"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_websockets" {
+  setting_id = "websockets"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "on"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_0rtt" {
+  setting_id = "0rtt"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "on"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_email_obfuscation" {
+  setting_id = "email_obfuscation"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_hotlink_protection" {
+  setting_id = "hotlink_protection"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
+
+resource "cloudflare_zone_setting" "donmai_moe_server_side_exclude" {
+  setting_id = "server_side_exclude"
+  zone_id    = cloudflare_zone.donmai_moe.id
+  value      = "off"
+}
+
+resource "cloudflare_dns_record" "donmai_moe" {
   zone_id = cloudflare_zone.donmai_moe.id
   type    = "CNAME"
   name    = "donmai.moe"
   content = "danbooru.donmai.us"
+  ttl     = 1
   proxied = true
 }
 
-resource "cloudflare_record" "www_donmai_moe" {
+resource "cloudflare_dns_record" "www_donmai_moe" {
   zone_id = cloudflare_zone.donmai_moe.id
   type    = "CNAME"
-  name    = "www"
+  name    = "www.donmai.moe"
   content = "danbooru.donmai.us"
+  ttl     = 1
   proxied = true
 }

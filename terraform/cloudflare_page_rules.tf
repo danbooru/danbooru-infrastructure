@@ -6,7 +6,7 @@ resource "cloudflare_page_rule" "page_rule_d233aa0f9beecdda3076f60414cb6ff1" {
   target   = "https://cdn.donmai.us/*"
   priority = 3
   status   = "active"
-  actions {
+  actions = {
     cache_level = "aggressive"
   }
 }
@@ -16,7 +16,7 @@ resource "cloudflare_page_rule" "page_rule_bccfb9b07003cc2bfaaccc9dbaca5834" {
   target   = "*.donmai.us/autocomplete*"
   priority = 4
   status   = "active"
-  actions {
+  actions = {
     cache_level = "cache_everything"
   }
 }
