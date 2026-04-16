@@ -400,16 +400,6 @@ resource "cloudflare_record" "mx_donmai_us" {
 # Other records
 #
 
-# DKIM records for AWS SES
-# https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail
-resource "cloudflare_record" "dkim_danbooru_donmai_us" {
-  count   = 3
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "CNAME"
-  name    = "${element(aws_ses_domain_dkim.danbooru_donmai_us.dkim_tokens, count.index)}._domainkey.danbooru"
-  value   = "${element(aws_ses_domain_dkim.danbooru_donmai_us.dkim_tokens, count.index)}.dkim.amazonses.com"
-}
-
 # Sender Policy Framework (SPF) lets domain owners tell email providers which
 # servers are allowed to send email from their domains.
 #
@@ -438,14 +428,6 @@ resource "cloudflare_record" "dmarc_danbooru_donmai_us" {
   type    = "TXT"
   name    = "_dmarc"
   value   = "v=DMARC1; p=none; sp=none; pct=100; fo=1; rua=mailto:dmarc@danbooru.donmai.us; ruf=mailto:dmarc@danbooru.donmai.us;"
-}
-
-# Verify domain ownership for AWS SES
-resource "cloudflare_record" "aws_ses_verification_donmai_us" {
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "TXT"
-  name    = "_amazonses.danbooru"
-  value   = aws_ses_domain_identity.danbooru_donmai_us.verification_token
 }
 
 # SMTP2GO domain verification

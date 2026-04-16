@@ -1,9 +1,6 @@
 # Copy this file to terraform.tfvars and edit.
 # See variables.tf for documentation.
 
-aws_access_key = ""
-aws_secret_key = ""
-
 cloudflare_api_token = ""
 
 hetzner_username = ""

@@ -2,19 +2,6 @@
 # terraform.tfvars.example for an example.
 
 #
-# Amazon AWS
-#
-
-# https://console.aws.amazon.com/iam/home#/users
-#
-# Required permissions:
-#
-# * AmazonSESReadOnlyAccess (for reading DKIM keys from SES)
-
-variable "aws_access_key" {}
-variable "aws_secret_key" {}
-
-#
 # Cloudflare
 #
 
