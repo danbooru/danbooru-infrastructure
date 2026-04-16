@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: signoz
-        image: signoz/signoz:v0.118.0
+        image: signoz/signoz:v0.119.0
         imagePullPolicy: Always
         args: ["-config=/root/config/prometheus.yml"]
 
