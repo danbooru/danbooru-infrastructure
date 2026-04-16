@@ -380,6 +380,24 @@ resource "cloudflare_record" "dmarc_danbooru_donmai_us" {
   value   = "v=DMARC1; p=none; sp=none; pct=100; fo=1; rua=mailto:dmarc@danbooru.donmai.us; ruf=mailto:dmarc@danbooru.donmai.us;"
 }
 
+# Sparkpost domain verification
+resource "cloudflare_record" "scph1022_domainkey_danbooru_donmai_us" {
+  count   = 1
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "TXT"
+  name    = "scph1022._domainkey.danbooru"
+  # p is the DKIM public key used by recipients to verify signed emails (not secret)
+  value   = "v=DKIM1; k=rsa; h=sha256; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCyiVpbSNKJLwnJ/Z9ak1QJp27LwCYtoRDjDEYxfEJf6ssDlt7oiLA0xYyfMwmCGR0wnQ58BnCvjE9fwoJgkshVjXgaWLXcbAoHl4ThyeqtiQ3Hk0bqQSth8drxgPihTDxQeDjBMR16KJeQMa2CPad8Hw9eC2I9xRIU10jPTkEQPwIDAQAB"
+}
+
+resource "cloudflare_record" "bounce_danbooru_donmai_us" {
+  count   = 1
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "CNAME"
+  name    = "bounce.danbooru"
+  value   = "sparkpostmail.com"
+}
+
 # Verify domain ownership with Github to get a verified badge on https://github.com/danbooru.
 # https://docs.github.com/en/github/setting-up-and-managing-organizations-and-teams/verifying-your-organizations-domain
 resource "cloudflare_record" "github_domain_verification_danbooru_donmai_us" {
