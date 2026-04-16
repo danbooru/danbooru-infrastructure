@@ -80,22 +80,8 @@ resource "cloudflare_zone_settings_override" "donmai_us" {
     # https://support.cloudflare.com/hc/en-us/articles/200168396
     brotli = "on"
 
-    # https://support.cloudflare.com/hc/en-us/articles/200169876
-    minify {
-      css  = "off"
-      html = "off"
-      js   = "off"
-    }
-
     # https://support.cloudflare.com/hc/en-us/articles/219178057-Configuring-Cloudflare-Mirage
     mirage = "off"
-
-    # https://support.cloudflare.com/hc/en-us/articles/200168336
-    mobile_redirect {
-      mobile_subdomain = ""
-      status           = "off"
-      strip_uri        = false
-    }
 
     # https://support.cloudflare.com/hc/en-us/articles/360000607372-Using-Cloudflare-Polish-to-compress-images
     polish = "off"

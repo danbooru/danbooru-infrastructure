@@ -73,22 +73,8 @@ resource "cloudflare_zone_settings_override" "donmai_moe" {
     # https://support.cloudflare.com/hc/en-us/articles/200168396
     brotli = "on"
 
-    # https://support.cloudflare.com/hc/en-us/articles/200169876
-    minify {
-      css  = "off"
-      html = "off"
-      js   = "off"
-    }
-
     # https://support.cloudflare.com/hc/en-us/articles/219178057-Configuring-Cloudflare-Mirage
     #mirage = "off"
-
-    # https://support.cloudflare.com/hc/en-us/articles/200168336
-    mobile_redirect {
-      mobile_subdomain = ""
-      status           = "off"
-      strip_uri        = false
-    }
 
     # https://support.cloudflare.com/hc/en-us/articles/360000607372-Using-Cloudflare-Polish-to-compress-images
     #polish = "off"
@@ -173,7 +159,7 @@ resource "cloudflare_record" "donmai_moe" {
   zone_id = cloudflare_zone.donmai_moe.id
   type    = "CNAME"
   name    = "donmai.moe"
-  value   = "danbooru.donmai.us"
+  content = "danbooru.donmai.us"
   proxied = true
 }
 
@@ -181,6 +167,6 @@ resource "cloudflare_record" "www_donmai_moe" {
   zone_id = cloudflare_zone.donmai_moe.id
   type    = "CNAME"
   name    = "www"
-  value   = "danbooru.donmai.us"
+  content = "danbooru.donmai.us"
   proxied = true
 }
