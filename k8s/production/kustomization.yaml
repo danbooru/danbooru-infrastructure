@@ -92,7 +92,6 @@ resources:
 - ../fumimi
 - ../recommender
 - ../postgres
-- ../danbooru-images
 - ../danbooru
 - ../downbooru
 - ../betabooru
@@ -120,10 +119,6 @@ patches:
 - path: patches/danbooru-jobs.yaml
   target:
     name: danbooru-jobs
-    kind: Deployment
-- path: patches/danbooru-images.yaml
-  target:
-    name: danbooru-images
     kind: Deployment
 - path: patches/betabooru.yaml
   target:

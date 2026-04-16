@@ -5,16 +5,6 @@ metadata:
 spec:
   template:
     spec:
-      containers:
-      - name: danbooru
-        volumeMounts:
-        - mountPath: /srv
-          name: danbooru-images
-          mountPropagation: HostToContainer
-      volumes:
-      - name: danbooru-images
-        hostPath:
-          path: /srv
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
