@@ -440,3 +440,10 @@ resource "cloudflare_record" "yandex_domain_verification_danbooru_donmai_us" {
   name    = "danbooru"
   value   = "yandex-verification: fa456bda52099f32"
 }
+
+resource "cloudflare_record" "bing_domain_verification_danbooru_donmai_us" {
+  zone_id = cloudflare_zone.donmai_us.id
+  type    = "CNAME"
+  name    = "1d230d6ffbc11b54e957cf0e3dc0ad6c"
+  value   = "verify.bing.com"
+}
