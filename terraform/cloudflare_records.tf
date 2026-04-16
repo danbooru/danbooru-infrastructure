@@ -207,17 +207,13 @@ resource "cloudflare_record" "node3_haachama_donmai_us" {
 }
 
 resource "cloudflare_record" "cdn_donmai_us" {
-  count   = 2
+  count   = 1
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
   name    = "cdn"
   proxied = true
   value = [
-    local.servers.kiara.ipv4,
-    local.servers.irys.ipv4,
-#    local.servers.gura.ipv4,
-#    local.servers.ame.ipv4,
-#    local.servers.ina.ipv4,
+    local.servers.bijou.ipv4,
   ][count.index]
 }
 
@@ -227,9 +223,7 @@ resource "cloudflare_record" "cdn0_donmai_us" {
   type    = "A"
   name    = "cdn0"
   proxied = true
-  value   = [
-    local.servers.kiara.ipv4,
-  ][count.index]
+  value   = local.servers.bijou.ipv4
 }
 
 resource "cloudflare_record" "cdn1_donmai_us" {

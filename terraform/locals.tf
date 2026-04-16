@@ -71,5 +71,10 @@ locals {
       id   = var.server_ids.irys
       ipv4 = data.external.irys_donmai_us.result.server_ip
     }
+
+    bijou = {
+      id   = var.server_ids.bijou
+      ipv4 = data.external.bijou_donmai_us.result.server_ip
+    }
   }
 }
