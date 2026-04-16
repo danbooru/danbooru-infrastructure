@@ -26,7 +26,7 @@ spec:
       containers:
       - name: nginx
         # https://hub.docker.com/r/openresty/openresty
-        image: openresty/openresty:1.19.9.1-alpine
+        image: openresty/openresty:1.29.2.3-bookworm-fat
         ports:
         - containerPort: 80
         volumeMounts:
