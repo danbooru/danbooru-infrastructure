@@ -18,14 +18,7 @@ ovh_consumer_key       = ""
 scaleway_dedibox_api_token = ""
 
 server_ids = {
-  inuyama = null
-  kagamihara = null
-  shima = null
-  oogaki = null
-  saitou = null
-  kinako = null
   oumae = null
-  yukinoshita = null
   isshiki = null
   naoko = null
 }
