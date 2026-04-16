@@ -2,14 +2,14 @@
 # https://support.cloudflare.com/hc/en-us/articles/360019093151-Managing-DNS-records-in-Cloudflare
 
 resource "cloudflare_record" "danbooru_donmai_us" {
-  count   = 3
+  count   = 2
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
   name    = "danbooru"
   value = [
     local.servers.gura.ipv4,
     local.servers.ame.ipv4,
-    local.servers.ina.ipv4,
+    # local.servers.ina.ipv4,
   ][count.index]
   proxied = true
 }
@@ -23,53 +23,27 @@ resource "cloudflare_record" "isshiki_donmai_us" {
 }
 
 resource "cloudflare_record" "betabooru_donmai_us" {
-  count = 3
+  count = 2
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
   name    = "betabooru"
   value = [
     local.servers.gura.ipv4,
     local.servers.ame.ipv4,
-    local.servers.ina.ipv4,
-  ][count.index]
-  proxied = true
-}
-
-resource "cloudflare_record" "deepdanbooru_donmai_us" {
-  count = 3
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "A"
-  name    = "deepdanbooru"
-  value = [
-    local.servers.gura.ipv4,
-    local.servers.ame.ipv4,
-    local.servers.ina.ipv4,
+    # local.servers.ina.ipv4,
   ][count.index]
   proxied = true
 }
 
 resource "cloudflare_record" "autotagger_donmai_us" {
-  count = 3
+  count = 2
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
   name    = "autotagger"
   value = [
     local.servers.gura.ipv4,
     local.servers.ame.ipv4,
-    local.servers.ina.ipv4,
-  ][count.index]
-  proxied = true
-}
-
-resource "cloudflare_record" "kibana_donmai_us" {
-  count = 3
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "A"
-  name    = "kibana"
-  value = [
-    local.servers.gura.ipv4,
-    local.servers.ame.ipv4,
-    local.servers.ina.ipv4,
+    # local.servers.ina.ipv4,
   ][count.index]
   proxied = true
 }
@@ -91,7 +65,7 @@ resource "cloudflare_record" "mail_donmai_us" {
   zone_id = cloudflare_zone.donmai_us.id
   type    = "A"
   name    = "mail"
-  value   = local.servers.oogaki.ipv4
+  value   = local.servers.mori.ipv4
 }
 
 resource "cloudflare_record" "naoko_donmai_us" {
@@ -99,14 +73,6 @@ resource "cloudflare_record" "naoko_donmai_us" {
   type    = "A"
   name    = "naoko"
   value   = local.servers.naoko.ipv4
-  proxied = false
-}
-
-resource "cloudflare_record" "oogaki_donmai_us" {
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "A"
-  name    = "oogaki"
-  value   = local.servers.oogaki.ipv4
   proxied = false
 }
 
@@ -147,14 +113,6 @@ resource "cloudflare_record" "mori_donmai_us" {
   type    = "A"
   name    = "mori"
   value   = local.servers.mori.ipv4
-  proxied = false
-}
-
-resource "cloudflare_record" "kiara_donmai_us" {
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "A"
-  name    = "kiara"
-  value   = local.servers.kiara.ipv4
   proxied = false
 }
 
@@ -270,14 +228,6 @@ resource "cloudflare_record" "testbooru_cdn_donmai_us" {
     local.servers.node2_haachama.ipv4,
     local.servers.node3_haachama.ipv4,
   ][count.index]
-}
-
-resource "cloudflare_record" "b2_donmai_us" {
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "CNAME"
-  name    = "b2"
-  value   = "f000.backblazeb2.com"
-  proxied = true
 }
 
 #
@@ -428,32 +378,6 @@ resource "cloudflare_record" "dmarc_danbooru_donmai_us" {
   type    = "TXT"
   name    = "_dmarc"
   value   = "v=DMARC1; p=none; sp=none; pct=100; fo=1; rua=mailto:dmarc@danbooru.donmai.us; ruf=mailto:dmarc@danbooru.donmai.us;"
-}
-
-# SMTP2GO domain verification
-# https://support.smtp2go.com/hc/en-gb/articles/115004408567-Verified-Senders
-resource "cloudflare_record" "em1050050_danbooru_donmai_us" {
-  count   = 1
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "CNAME"
-  name    = "em1050050.danbooru"
-  value   = "return.smtp2go.net"
-}
-
-resource "cloudflare_record" "s1050050_danbooru_donmai_us" {
-  count   = 1
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "CNAME"
-  name    = "s1050050._domainkey.danbooru"
-  value   = "dkim.smtp2go.net"
-}
-
-resource "cloudflare_record" "link_danbooru_donmai_us" {
-  count   = 1
-  zone_id = cloudflare_zone.donmai_us.id
-  type    = "CNAME"
-  name    = "link.danbooru"
-  value   = "track.smtp2go.net"
 }
 
 # Verify domain ownership with Github to get a verified badge on https://github.com/danbooru.

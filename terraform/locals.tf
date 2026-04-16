@@ -1,10 +1,5 @@
 locals {
   servers = {
-    oogaki = {
-      id   = var.server_ids.oogaki
-      ipv4 = data.ovh_dedicated_server.oogaki_donmai_us.ip
-    }
-
     gura = {
       id   = var.server_ids.gura
       ipv4 = data.ovh_dedicated_server.gura_donmai_us.ip
@@ -23,11 +18,6 @@ locals {
     mori = {
       id   = var.server_ids.mori
       ipv4 = data.ovh_dedicated_server.mori_donmai_us.ip
-    }
-
-    kiara = {
-      id   = var.server_ids.kiara
-      ipv4 = data.ovh_dedicated_server.kiara_donmai_us.ip
     }
 
     isshiki = {
