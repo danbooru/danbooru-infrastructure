@@ -50,7 +50,7 @@ secretGenerator:
   env: secrets/recommender.env
 
 - name: fumimi-secret-env
-  namespace: danbooru
+  namespace: fumimi
   env: secrets/fumimi.env
 
 - name: squid-config
