@@ -24,7 +24,7 @@ spec:
       serviceAccountName: otel-collector-metrics
       initContainers:
       - name: check-sync-migrations
-        image: signoz/signoz-otel-collector:v0.144.2
+        image: signoz/signoz-otel-collector:v0.144.4
         imagePullPolicy: Always
         command: ["/signoz-otel-collector"]
         args: ["migrate", "sync", "check"]
@@ -38,7 +38,7 @@ spec:
 
       containers:
       - name: otel-collector-metrics
-        image: signoz/signoz-otel-collector:v0.144.2
+        image: signoz/signoz-otel-collector:v0.144.4
         imagePullPolicy: Always
         args: ["--config=/etc/otel-collector/config.yaml"]
 

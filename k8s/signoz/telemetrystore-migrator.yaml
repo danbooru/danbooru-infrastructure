@@ -14,7 +14,7 @@ spec:
     spec:
       initContainers:
       - name: ready
-        image: signoz/signoz-otel-collector:v0.144.2
+        image: signoz/signoz-otel-collector:v0.144.4
         imagePullPolicy: Always
         command: ["/signoz-otel-collector"]
         args: ["migrate", "ready"]
@@ -26,7 +26,7 @@ spec:
         - name: SIGNOZ_OTEL_COLLECTOR_TIMEOUT
           value: "10m"
       - name: bootstrap
-        image: signoz/signoz-otel-collector:v0.144.2
+        image: signoz/signoz-otel-collector:v0.144.4
         imagePullPolicy: Always
         command: ["/signoz-otel-collector"]
         args: ["migrate", "bootstrap"]
@@ -38,7 +38,7 @@ spec:
         - name: SIGNOZ_OTEL_COLLECTOR_TIMEOUT
           value: "10m"
       - name: sync
-        image: signoz/signoz-otel-collector:v0.144.2
+        image: signoz/signoz-otel-collector:v0.144.4
         imagePullPolicy: Always
         command: ["/signoz-otel-collector"]
         args: ["migrate", "sync", "up"]
@@ -51,7 +51,7 @@ spec:
           value: "10m"
       containers:
       - name: async
-        image: signoz/signoz-otel-collector:v0.144.2
+        image: signoz/signoz-otel-collector:v0.144.4
         imagePullPolicy: Always
         command: ["/signoz-otel-collector"]
         args: ["migrate", "async", "up"]
