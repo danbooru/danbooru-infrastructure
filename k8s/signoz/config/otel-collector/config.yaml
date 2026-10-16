@@ -76,6 +76,23 @@ processors:
       - name: host.name
       - name: host.type
       - name: container.name
+  signozspanmapper:
+    groups: []
+  signozllmpricing:
+    attrs:
+      model: gen_ai.request.model
+      in: gen_ai.usage.input_tokens
+      out: gen_ai.usage.output_tokens
+      cache_read: gen_ai.usage.cache_read.input_tokens
+      cache_write: gen_ai.usage.cache_creation.input_tokens
+    default_pricing:
+      rules: []
+    output_attrs:
+      in: signoz.gen_ai.usage.input_tokens.cost
+      out: signoz.gen_ai.usage.output_tokens.cost
+      cache_read: signoz.gen_ai.usage.cache_read.input_tokens.cost
+      cache_write: signoz.gen_ai.usage.cache_write.input_tokens.cost
+      total: signoz.gen_ai.usage.tokens.cost
 
 extensions:
   health_check:
@@ -113,7 +130,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [signozspanmetrics/delta, batch]
+      processors: [signozspanmetrics/delta, signozspanmapper, signozllmpricing, batch]
       exporters: [clickhousetraces, metadataexporter, debug]
     metrics:
       receivers: [otlp]
