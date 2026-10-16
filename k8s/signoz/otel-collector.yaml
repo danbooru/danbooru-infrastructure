@@ -54,6 +54,13 @@ spec:
         env:
         - name: LOW_CARDINAL_EXCEPTION_GROUPING
           value: "true"
+        # See also memory_limiter in config/otel-collector/config.yaml
+        - name: GOMEMLIMIT
+          value: "1024MiB"
+
+        resources:
+          limits:
+            memory: "1280Mi"
 
         volumeMounts:
         - name: otel-collector-config

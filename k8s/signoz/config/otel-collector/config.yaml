@@ -36,17 +36,11 @@ processors:
     send_batch_size: 10000
     send_batch_max_size: 11000
     timeout: 10s
-  # memory_limiter:
-  #   # 80% of maximum memory up to 2G
-  #   limit_mib: 1500
-  #   # 25% of limit up to 2G
-  #   spike_limit_mib: 512
-  #   check_interval: 5s
-  #
-  #   # 50% of the maximum memory
-  #   limit_percentage: 50
-  #   # 20% of max memory usage spike expected
-  #   spike_limit_percentage: 20
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1024
+    spike_limit_mib: 256
+    # limit_percentage: 80 # 80% of container memory limit
   # queued_retry:
   #   num_workers: 4
   #   queue_size: 100
@@ -130,14 +124,14 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [signozspanmetrics/delta, signozspanmapper, signozllmpricing, batch]
+      processors: [memory_limiter, signozspanmetrics/delta, signozspanmapper, signozllmpricing, batch]
       exporters: [clickhousetraces, metadataexporter, debug]
     metrics:
       receivers: [otlp]
-      processors: [batch]
+      processors: [memory_limiter, batch]
       exporters: [signozclickhousemetrics, metadataexporter, debug]
     logs:
       # receivers: [otlp, filelog/dockercontainers]
       receivers: [otlp]
-      processors: [batch]
+      processors: [memory_limiter, batch]
       exporters: [clickhouselogsexporter, metadataexporter, debug]
